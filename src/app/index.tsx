@@ -144,7 +144,7 @@ export default function Landing() {
           <Mascot size={150} state="sleeping" />
           <Text style={[T.caption, { marginTop: S.sm, fontFamily: F.serifItalic, fontSize: 15 }]}>Plume is already in bed. Zzz…</Text>
           <Text style={[T.h1, { textAlign: 'center', marginTop: S.lg }, wide && { fontSize: 48, lineHeight: 52, letterSpacing: -1.5 }]}>
-            Be first in when Kudoze opens.
+            Tonight is a good night to start.
           </Text>
           <Text style={[T.body, { color: C.muted, textAlign: 'center', marginTop: S.md, maxWidth: 420 }]}>
             Interested? Leave your email and we’ll let you know the day it opens. Bring a friend who stays up too late.
