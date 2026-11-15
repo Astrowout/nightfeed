@@ -40,7 +40,7 @@ export default function SignInScreen() {
       <ScrollView contentContainerStyle={[st.page, { paddingTop: insets.top + 32, paddingBottom: insets.bottom + 40 }]} keyboardShouldPersistTaps="handled">
         <View style={st.hero}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Text style={[T.title, { fontFamily: F.serif, fontSize: 22 }]}>nightfeed</Text>
+            <Text style={[T.title, { fontFamily: F.serif, fontSize: 22 }]}>kudoze</Text>
           </View>
           <MascotSays size={96} mascot={{ smile: true, bowTie: true }} style={{ marginTop: S.xl }}>
             Hi, I’m Plume. Let’s get you to bed.
@@ -85,7 +85,7 @@ export default function SignInScreen() {
               >
                 <View style={[st.box, consent && st.boxOn]}>{consent && <Text style={st.tick}>✓</Text>}</View>
                 <Text style={[T.small, { flex: 1, color: C.ink }]}>
-                  I agree that Nightfeed stores my sleep data (health data) to show my nights, and shares nights with my followers unless I set
+                  I agree that Kudoze stores my sleep data (health data) to show my nights, and shares nights with my followers unless I set
                   them to “Only me”. I can download or delete everything from my profile.
                 </Text>
               </Pressable>

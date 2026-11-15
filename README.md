@@ -1,4 +1,4 @@
-# Nightfeed
+# Kudoze
 
 A social feed for sleep: post your nights, give kudos, comment, follow people and join bedtime challenges. One Expo (React Native) codebase runs as a web app and as native iOS and Android apps. The API runs on Vercel next to the web app.
 

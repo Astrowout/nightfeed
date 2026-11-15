@@ -31,9 +31,9 @@ export default function YouScreen() {
         await api(`/connect/${p}`, { method: 'POST' });
         await refresh();
       } else if (PHONE.includes(p)) {
-        setNote(`${PROVIDER_LABEL[p]} syncs from the phone app. Open Nightfeed on your phone to allow it.`);
+        setNote(`${PROVIDER_LABEL[p]} syncs from the phone app. Open Kudoze on your phone to allow it.`);
       } else {
-        const redirectUri = Platform.OS === 'web' ? `${window.location.origin}/you` : 'nightfeed://you';
+        const redirectUri = Platform.OS === 'web' ? `${window.location.origin}/you` : 'kudoze://you';
         const { url } = await api<{ url: string }>(`/connect/${p}`, { method: 'POST', body: { redirectUri } });
         if (Platform.OS === 'web') window.location.assign(url);
         else {
@@ -54,7 +54,7 @@ export default function YouScreen() {
       return;
     }
     const data = await api('/me/export');
-    await Share.share({ message: JSON.stringify(data, null, 2), title: 'Nightfeed export' });
+    await Share.share({ message: JSON.stringify(data, null, 2), title: 'Kudoze export' });
   };
 
   const deleteAccount = async () => {
@@ -71,7 +71,7 @@ export default function YouScreen() {
           <Text style={T.body}>
             {state.mode === 'demo'
               ? 'Demo mode: pick the devices you wear. Real syncing starts once Open Wearables runs.'
-              : 'Connected through Open Wearables. Watches and rings link from the cloud; phone health apps sync from the Nightfeed app.'}
+              : 'Connected through Open Wearables. Watches and rings link from the cloud; phone health apps sync from the Kudoze app.'}
           </Text>
           <View style={{ gap: S.sm }}>
             <Text style={T.eyebrow}>Watches and rings</Text>

@@ -29,7 +29,7 @@ export default function Landing() {
   return (
     <View style={{ flex: 1, backgroundColor: C.canvas }}>
       <Head>
-        <title>Nightfeed: the social feed for sleep</title>
+        <title>Kudoze: the social feed for sleep</title>
         <meta
           name="description"
           content="Post last night from your watch or ring, give friends kudos for a good night and keep each other to a bedtime."
@@ -47,7 +47,7 @@ export default function Landing() {
               Sleep better, together.
             </Text>
             <Text style={st.lede}>
-              Nightfeed turns last night from your watch or ring into a post. Give friends kudos for a good night, compare bedtimes and keep
+              Kudoze turns last night from your watch or ring into a post. Give friends kudos for a good night, compare bedtimes and keep
               each other honest.
             </Text>
             <View style={st.ctaRow}>
@@ -158,7 +158,7 @@ function Nav() {
       <View style={[st.wrap, st.navInner]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Mascot size={36} />
-          <Text style={{ fontFamily: F.serif, fontSize: 22, color: C.ink, letterSpacing: -0.4 }}>nightfeed</Text>
+          <Text style={{ fontFamily: F.serif, fontSize: 22, color: C.ink, letterSpacing: -0.4 }}>kudoze</Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: S.sm }}>
           <Button label="Log in" kind="ghost" small onPress={logIn} />
@@ -240,7 +240,7 @@ function Footer() {
       <View style={[st.wrap, { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: S.md }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <Mascot size={28} interactive={false} />
-          <Text style={T.small}>© {new Date().getFullYear()} Nightfeed</Text>
+          <Text style={T.small}>© {new Date().getFullYear()} Kudoze</Text>
         </View>
         <Text style={T.small}>Demo mode: the people you meet inside are made up.</Text>
       </View>

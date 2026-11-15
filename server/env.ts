@@ -5,7 +5,7 @@ export interface Env {
   /** Postgres connection string (Neon via the Vercel Marketplace). */
   DATABASE_URL?: string;
   BETTER_AUTH_SECRET: string;
-  /** Public base URL of this deployment, e.g. https://nightfeed.vercel.app */
+  /** Public base URL of this deployment, e.g. https://kudoze.vercel.app */
   BETTER_AUTH_URL?: string;
   /** Extra allowed browser origins, comma separated. */
   TRUSTED_ORIGINS?: string;

@@ -28,4 +28,4 @@ site.route('/', api);
 site.use('/*', serveStatic({ root: './dist' }));
 site.get('*', serveStatic({ path: './dist/index.html' }));
 
-serve({ fetch: site.fetch, port }, () => console.log(`Nightfeed running on http://localhost:${port}`));
+serve({ fetch: site.fetch, port }, () => console.log(`Kudoze running on http://localhost:${port}`));

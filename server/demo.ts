@@ -40,7 +40,7 @@ export async function seedDemo(db: DB) {
     DEMO.map((p) => ({
       id: demoId(p),
       name: p.name,
-      email: `${p.handle.replace(/[^a-z0-9]/gi, '')}@demo.nightfeed.invalid`,
+      email: `${p.handle.replace(/[^a-z0-9]/gi, '')}@demo.kudoze.invalid`,
       handle: p.handle,
       city: p.city,
       color: p.color,

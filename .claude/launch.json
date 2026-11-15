@@ -2,7 +2,7 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "nightfeed-local",
+      "name": "kudoze-local",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "local"],
       "port": 8787

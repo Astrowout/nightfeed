@@ -12,7 +12,7 @@ export const user = pgTable('user', {
   image: text('image'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
-  // Nightfeed profile fields (Better Auth additionalFields)
+  // Kudoze profile fields (Better Auth additionalFields)
   handle: text('handle').unique(),
   city: text('city'),
   color: text('color'),
@@ -62,7 +62,7 @@ export const verification = pgTable('verification', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
-// ---- Nightfeed tables ----
+// ---- Kudoze tables ----
 
 export const nights = pgTable(
   'nights',

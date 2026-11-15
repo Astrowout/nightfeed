@@ -12,14 +12,14 @@ export const API_BASE =
     ? typeof window !== 'undefined'
       ? window.location.origin
       : ''
-    : (process.env.EXPO_PUBLIC_API_URL ?? 'https://nightfeed.vercel.app');
+    : (process.env.EXPO_PUBLIC_API_URL ?? 'https://kudoze.app');
 
 export const authClient = createAuthClient({
   baseURL: `${API_BASE}/api/auth`,
   plugins:
     Platform.OS === 'web'
       ? []
-      : [expoClient({ scheme: 'nightfeed', storagePrefix: 'nightfeed', storage: SecureStore })],
+      : [expoClient({ scheme: 'kudoze', storagePrefix: 'kudoze', storage: SecureStore })],
 });
 
 export class ApiError extends Error {
@@ -32,7 +32,7 @@ export class ApiError extends Error {
   }
 }
 
-/** Calls the Nightfeed API with the signed-in session. */
+/** Calls the Kudoze API with the signed-in session. */
 export async function api<T = unknown>(path: string, init: { method?: string; body?: unknown } = {}): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (Platform.OS !== 'web') {

@@ -3,7 +3,7 @@ import { Text, View, type TextStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { C, F } from '../theme';
 
-// Logos for the devices Nightfeed syncs with, shown in one ink colour on the landing page.
+// Logos for the devices Kudoze syncs with, shown in one ink colour on the landing page.
 // SVG paths come from Simple Icons 16.38.0 (CC0-1.0, https://simpleicons.org). The icons are
 // public domain, but the marks are trademarks of their owners: check each brand's
 // "works with" guidelines before launch. Brands with no Simple Icons entry (Oura, Whoop,

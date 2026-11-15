@@ -24,7 +24,7 @@ export function createApp(db: DB, env: Env) {
   const app = new Hono<{ Variables: Vars }>().basePath('/api');
 
   app.onError((err, c) => {
-    console.error('[nightfeed]', err);
+    console.error('[kudoze]', err);
     return c.json({ error: 'Something went wrong on our side. Try again in a moment.' }, 500);
   });
 
@@ -76,7 +76,7 @@ export function createApp(db: DB, env: Env) {
       const list = await ow.sleepSessions(owUserId, day(start, -1), day(end, 1));
       session = list.find((s) => s.start_time === start) ?? list.find((s) => Math.abs(Date.parse(s.start_time) - Date.parse(start)) < 60000);
     } catch (e) {
-      console.error('[nightfeed] could not fetch sleep session', e);
+      console.error('[kudoze] could not fetch sleep session', e);
     }
     if (!session) {
       session = {
@@ -126,7 +126,7 @@ export function createApp(db: DB, env: Env) {
             }
           }
         } catch (e) {
-          console.error('[nightfeed] reconcile failed for', u.id, e);
+          console.error('[kudoze] reconcile failed for', u.id, e);
         }
       }
     }
@@ -161,7 +161,7 @@ export function createApp(db: DB, env: Env) {
     const myKudos = await db.select().from(kudos).where(eq(kudos.userId, me));
     const myFollows = await db.select().from(follows).where(eq(follows.followerId, me));
     const { owUserId: _ow, ...safeProfile } = profile;
-    c.header('Content-Disposition', 'attachment; filename="nightfeed-export.json"');
+    c.header('Content-Disposition', 'attachment; filename="kudoze-export.json"');
     return c.json({ exportedAt: new Date().toISOString(), profile: safeProfile, nights: mine, comments: myComments, kudos: myKudos, follows: myFollows });
   });
 
@@ -170,7 +170,7 @@ export function createApp(db: DB, env: Env) {
     const me = c.get('userId');
     const [profile] = await db.select().from(user).where(eq(user.id, me));
     if (profile?.owUserId && ow.configured) {
-      await ow.deleteUser(profile.owUserId).catch((e) => console.error('[nightfeed] Open Wearables delete failed', e));
+      await ow.deleteUser(profile.owUserId).catch((e) => console.error('[kudoze] Open Wearables delete failed', e));
     }
     await db.delete(user).where(eq(user.id, me));
     return c.json({ ok: true });
@@ -313,7 +313,7 @@ export function createApp(db: DB, env: Env) {
     }
     if (!me.owUserId) return c.json({ error: 'Your account is not linked to Open Wearables yet.' }, 409);
     const body = await c.req.json().catch(() => ({}));
-    const redirect = typeof body.redirectUri === 'string' && /^(https:\/\/|nightfeed:\/\/)/.test(body.redirectUri) ? body.redirectUri : `${env.BETTER_AUTH_URL}/you`;
+    const redirect = typeof body.redirectUri === 'string' && /^(https:\/\/|kudoze:\/\/)/.test(body.redirectUri) ? body.redirectUri : `${env.BETTER_AUTH_URL}/you`;
     return c.json({ url: await ow.authorizeUrl(me.owUserId, provider, redirect) });
   });
 

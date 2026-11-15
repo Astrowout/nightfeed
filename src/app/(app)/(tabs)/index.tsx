@@ -104,7 +104,7 @@ export default function FeedScreen() {
               color: C.ink,
             }}
           >
-            nightfeed
+            kudoze
           </Text>
         </View>
       }

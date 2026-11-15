@@ -1,4 +1,4 @@
-// Nightfeed's mascot, Plume: a plush pillow built on bot-avatars
+// Kudoze's mascot, Plume: a plush pillow built on bot-avatars
 // (MIT, Jakub Antalik, https://libraries.dev/bots). Like a brand bear, it is the
 // same character everywhere, in different moods and outfits.
 // A full-moon look is kept as an alternative: switch with MASCOT_LOOK.

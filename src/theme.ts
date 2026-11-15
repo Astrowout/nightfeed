@@ -1,7 +1,7 @@
 import { Platform, type TextStyle } from 'react-native';
 import type { SleepStageType } from './data/types';
 
-// Nightfeed design system: a merge of two references.
+// Kudoze design system: a merge of two references.
 // Superhuman: warm parchment canvas, white cards with hairlines, ink text,
 //   Midnight Wine as the only filled action, Lilac for selection, Violet for links only,
 //   Deep Lagoon as the single dark band (our "night" surface), no shadows on cards.

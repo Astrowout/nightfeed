@@ -14,7 +14,7 @@ const COLORS = ['#9BD8A9', '#FDE99B', '#B8CAF5', '#D4C7FF', '#F8D3C2', '#C9E7EF'
 export function createAuth(db: DB, env: Env) {
   const ow = new OpenWearables(env);
   const origins = [
-    'nightfeed://',
+    'kudoze://',
     ...(env.BETTER_AUTH_URL ? [env.BETTER_AUTH_URL] : []),
     ...(env.TRUSTED_ORIGINS ?? '').split(',').filter(Boolean),
   ];
@@ -42,7 +42,7 @@ export function createAuth(db: DB, env: Env) {
             // Sleep data is health data (GDPR art. 9): no account without explicit consent.
             const body = (ctx?.body ?? {}) as { healthConsent?: unknown };
             if (body.healthConsent !== true) {
-              throw new APIError('BAD_REQUEST', { message: 'Please agree to how Nightfeed uses your sleep data.' });
+              throw new APIError('BAD_REQUEST', { message: 'Please agree to how Kudoze uses your sleep data.' });
             }
             const base = (data.name || data.email.split('@')[0]).toLowerCase().replace(/[^a-z0-9]+/g, '').slice(0, 16) || 'sleeper';
             return {
@@ -65,7 +65,7 @@ export function createAuth(db: DB, env: Env) {
                 const owUserId = await ow.createUser(created.email, created.name);
                 await db.update(user).set({ owUserId }).where(eq(user.id, created.id));
               } catch (e) {
-                console.error('[nightfeed] could not create Open Wearables user', e);
+                console.error('[kudoze] could not create Open Wearables user', e);
               }
             } else if (isDemoMode(env)) {
               await db.update(user).set({ connectedProviders: ['garmin'] }).where(eq(user.id, created.id));
