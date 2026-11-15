@@ -6,6 +6,7 @@ import { BrandWall } from '../components/BrandLogos';
 import { Hypnogram, ScoreRing } from '../components/Charts';
 import { PaperScrap } from '../components/Collage';
 import { CommentIcon, LockIcon, MoonIcon, StarIcon, TrophyIcon, WatchIcon } from '../components/Icons';
+import { Mascot } from '../components/Mascot';
 import { Button, Stat, Tag } from '../components/Ui';
 import { buildSession, rng } from '../data/generate';
 import { C, F, FLOAT, R, S, T, scoreTag } from '../theme';
@@ -117,7 +118,7 @@ export default function Landing() {
 
         {/* Closing call to action */}
         <View style={[st.wrap, { paddingVertical: 96, alignItems: 'center' }]}>
-          <MoonIcon size={30} color={C.wine} filled />
+          <Mascot size={132} state="sleeping" />
           <Text style={[T.h1, { textAlign: 'center', marginTop: S.lg }, wide && { fontSize: 48, lineHeight: 52, letterSpacing: -1.5 }]}>
             Tonight is a good night to start.
           </Text>
@@ -140,7 +141,7 @@ function Nav() {
     <View style={st.nav}>
       <View style={[st.wrap, st.navInner]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <MoonIcon size={22} color={C.wine} filled />
+          <Mascot size={36} />
           <Text style={{ fontFamily: F.serif, fontSize: 22, color: C.ink, letterSpacing: -0.4 }}>nightfeed</Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: S.sm }}>

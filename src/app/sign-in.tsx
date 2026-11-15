@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PaperScrap } from '../components/Collage';
-import { MoonIcon } from '../components/Icons';
+import { Mascot } from '../components/Mascot';
 import { Button, Field, Segmented } from '../components/Ui';
 import { authClient } from '../lib/auth';
 import { C, F, FLOAT, R, S, T } from '../theme';
@@ -44,7 +44,7 @@ export default function SignInScreen() {
           <PaperScrap width={70} height={44} color={C.marigold} seed={8} rotate={8} style={{ top: 8, right: 4 }} />
           <PaperScrap width={46} height={64} color={C.periwinkle} seed={13} rotate={-4} style={{ top: -30, right: -6 }} />
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <MoonIcon size={22} color={C.wine} filled />
+            <Mascot size={44} />
             <Text style={[T.title, { fontFamily: F.serif, fontSize: 22 }]}>nightfeed</Text>
           </View>
           <Text style={[T.display, { marginTop: S.xxl, maxWidth: 330 }]}>Your nights, kept together.</Text>

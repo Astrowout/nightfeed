@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { PaperScrap } from '../../../components/Collage';
+import { Mascot } from '../../../components/Mascot';
 import { Hypnogram, StageLegend } from '../../../components/Charts';
 import { Button, Card, Screen, Section, Segmented, Stat } from '../../../components/Ui';
 import { clock, hm } from '../../../data/format';
@@ -37,7 +38,9 @@ export default function LogScreen() {
     setError(null);
     setBusy('sync');
     try {
-      const res = await api<{ session: SleepSession; title: string }>('/sync', { method: 'POST' });
+      const res = await api<{ session: SleepSession; title: string }>('/sync', {
+        method: 'POST',
+      });
       setDraft(res.session);
       setTitle(res.title);
       setCaption('');
@@ -66,7 +69,12 @@ export default function LogScreen() {
     try {
       const night = await api<Night>('/nights', {
         method: 'POST',
-        body: { title: title.trim() || 'Night', caption: caption.trim() || undefined, visibility, session: draft },
+        body: {
+          title: title.trim() || 'Night',
+          caption: caption.trim() || undefined,
+          visibility,
+          session: draft,
+        },
       });
       await refresh();
       setDraft(null);
@@ -92,7 +100,16 @@ export default function LogScreen() {
           <Pressable
             key={String(sym)}
             onPress={() => set((value + Number(delta) + 1440) % 1440)}
-            style={{ width: 44, height: 36, borderRadius: R.pill, borderWidth: 1, borderColor: C.line, alignItems: 'center', justifyContent: 'center', backgroundColor: C.paper }}
+            style={{
+              width: 44,
+              height: 36,
+              borderRadius: R.pill,
+              borderWidth: 1,
+              borderColor: C.line,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: C.paper,
+            }}
             accessibilityRole="button"
             accessibilityLabel={`${label} 15 minutes ${word}`}
           >
@@ -127,13 +144,22 @@ export default function LogScreen() {
         <>
           <Section title="Sync last night">
             <Card style={{ gap: S.lg }}>
-              <Text style={T.body}>
-                {state.mode === 'open_wearables'
-                  ? 'Fetches your latest finished night through Open Wearables.'
-                  : provider
-                    ? `Fetches last night from your ${PROVIDER_LABEL[provider]}. Demo data for now.`
-                    : 'Connect a device on your profile first.'}
-              </Text>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: S.md,
+                }}
+              >
+                <Mascot size={64} state={busy === 'sync' ? 'working' : 'default'} />
+                <Text style={[T.body, { flex: 1 }]}>
+                  {state.mode === 'open_wearables'
+                    ? 'Fetches your latest finished night through Open Wearables.'
+                    : provider
+                      ? `Fetches last night from your ${PROVIDER_LABEL[provider]}. Demo data for now.`
+                      : 'Connect a device on your profile first.'}
+                </Text>
+              </View>
               <Button label="Sync now" onPress={sync} busy={busy === 'sync'} full />
             </Card>
           </Section>
@@ -158,13 +184,28 @@ export default function LogScreen() {
               <Stat label="Lights out" value={clock(draft.start_time)} />
               <Stat label="Woke up" value={clock(draft.end_time)} />
             </View>
-            <View style={{ backgroundColor: C.inset, borderRadius: 12, padding: 12, gap: 10 }}>
+            <View
+              style={{
+                backgroundColor: C.inset,
+                borderRadius: 12,
+                padding: 12,
+                gap: 10,
+              }}
+            >
               <Hypnogram session={draft} />
               {draft.stages?.deep_minutes != null && <StageLegend />}
             </View>
             <View style={{ gap: 6 }}>
               <Text style={T.smallStrong}>Title</Text>
-              <TextInput value={title} onChangeText={setTitle} maxLength={80} placeholder="Name this night" placeholderTextColor={C.faint} style={[input, { fontFamily: F.serif, fontSize: 22 }]} accessibilityLabel="Title" />
+              <TextInput
+                value={title}
+                onChangeText={setTitle}
+                maxLength={80}
+                placeholder="Name this night"
+                placeholderTextColor={C.faint}
+                style={[input, { fontFamily: F.serif, fontSize: 22 }]}
+                accessibilityLabel="Title"
+              />
             </View>
             <View style={{ gap: 6 }}>
               <Text style={T.smallStrong}>How did it feel?</Text>
