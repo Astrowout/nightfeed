@@ -24,7 +24,8 @@ export function createAuth(db: DB, env: Env) {
     baseURL: env.BETTER_AUTH_URL,
     basePath: '/api/auth',
     database: drizzleAdapter(db, { provider: 'pg', schema, transaction: false }),
-    emailAndPassword: { enabled: true, minPasswordLength: 8, autoSignIn: true },
+    // Before launch nobody can create an account; app.ts also blocks sign-in while closed.
+    emailAndPassword: { enabled: true, minPasswordLength: 8, autoSignIn: true, disableSignUp: !env.APP_OPEN },
     trustedOrigins: origins,
     plugins: [expo()],
     user: {

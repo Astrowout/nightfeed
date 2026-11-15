@@ -28,10 +28,17 @@ export function createApp(db: DB, env: Env) {
     return c.json({ error: 'Something went wrong on our side. Try again in a moment.' }, 500);
   });
 
-  app.get('/health', (c) => c.json({ ok: true, mode }));
+  app.get('/health', (c) => c.json({ ok: true, mode, appOpen: env.APP_OPEN }));
+
+  // Before launch the app is closed: only checking a session and signing out pass through.
+  const CLOSED_MESSAGE = 'Kudoze isn’t open yet. Leave your email on the home page to hear when it opens.';
+  const OPEN_WHILE_CLOSED = ['/api/auth/get-session', '/api/auth/sign-out'];
 
   // Better Auth handles sign-up, sign-in, sessions and sign-out.
-  app.on(['GET', 'POST'], '/auth/*', (c) => auth.handler(c.req.raw));
+  app.on(['GET', 'POST'], '/auth/*', (c) => {
+    if (!env.APP_OPEN && !OPEN_WHILE_CLOSED.includes(c.req.path)) return c.json({ error: CLOSED_MESSAGE, message: CLOSED_MESSAGE }, 403);
+    return auth.handler(c.req.raw);
+  });
 
   // ---- Open Wearables webhook (signed by Svix) ----
   app.post('/webhooks/open-wearables', async (c) => {
@@ -156,6 +163,7 @@ export function createApp(db: DB, env: Env) {
 
   // ---- Everything below needs a signed-in person ----
   app.use('*', async (c, next) => {
+    if (!env.APP_OPEN) return c.json({ error: CLOSED_MESSAGE }, 403);
     const s = await auth.api.getSession({ headers: c.req.raw.headers });
     if (!s) return c.json({ error: 'Please sign in.' }, 401);
     c.set('userId', s.user.id);

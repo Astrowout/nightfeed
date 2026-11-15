@@ -21,7 +21,7 @@ await seedDemo(db as unknown as DB);
 
 const api = createApp(
   db as unknown as DB,
-  readEnv({ BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET ?? 'local-dev-secret-change-me-local-dev-secret', BETTER_AUTH_URL: `http://localhost:${port}` }),
+  readEnv({ BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET ?? 'local-dev-secret-change-me-local-dev-secret', BETTER_AUTH_URL: `http://localhost:${port}`, EXPO_PUBLIC_APP_OPEN: process.env.EXPO_PUBLIC_APP_OPEN ?? 'true' }),
 );
 const site = new Hono();
 site.route('/', api);

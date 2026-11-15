@@ -17,6 +17,12 @@ export interface Env {
   CRON_SECRET?: string;
   /** Time zone used for bedtimes and challenge rules. */
   APP_TIMEZONE?: string;
+  /**
+   * Kudoze is waitlist-only until launch. While closed, nobody can sign up or sign in and
+   * signed-in routes answer 403. Set EXPO_PUBLIC_APP_OPEN=true in Vercel to open it: the same
+   * variable is baked into the web build, so the site and the API always agree.
+   */
+  APP_OPEN: boolean;
 }
 
 export function readEnv(source: Record<string, string | undefined> = process.env): Env {
@@ -35,6 +41,7 @@ export function readEnv(source: Record<string, string | undefined> = process.env
     OW_WEBHOOK_SECRET: source.OW_WEBHOOK_SECRET || undefined,
     CRON_SECRET: source.CRON_SECRET || undefined,
     APP_TIMEZONE: source.APP_TIMEZONE || 'Europe/Brussels',
+    APP_OPEN: source.EXPO_PUBLIC_APP_OPEN === 'true',
   };
 }
 

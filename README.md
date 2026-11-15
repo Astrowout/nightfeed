@@ -6,7 +6,8 @@ A social feed for sleep: post your nights, give kudos, comment, follow people an
 
 ```bash
 npm install
-npm run build:web && npm run local   # web app + API + in-memory database on http://localhost:8787
+EXPO_PUBLIC_APP_OPEN=true npm run build:web && npm run local   # full app + API + in-memory database on http://localhost:8787
+npm run build:web && EXPO_PUBLIC_APP_OPEN=false npm run local   # what visitors see before launch: landing page and waitlist only
 npm run test:api                     # end-to-end API checks against an in-memory Postgres
 npm run typecheck
 npm run ios | android                # native apps (set EXPO_PUBLIC_API_URL to your deployed URL)
@@ -28,6 +29,7 @@ npm run ios | android                # native apps (set EXPO_PUBLIC_API_URL to y
 2. Add environment variables in Vercel, never in the repo:
    - `BETTER_AUTH_SECRET`: a random value, e.g. `openssl rand -base64 32`
    - `CRON_SECRET`: another random value (Vercel sends it to the daily cron)
+   - `EXPO_PUBLIC_APP_OPEN`: leave unset until launch. While it is unset the site is the landing page and waitlist only, and the API refuses sign-up, sign-in and every signed-in route (old sessions included). Set it to `true` and redeploy to open Kudoze; the same variable is baked into the web build and read by the API, so they always agree.
    - `BETTER_AUTH_URL`: optional, your production URL (defaults to the Vercel production domain)
 3. Push to `main`. The build runs migrations, seeds the demo people once, and exports the web app.
 

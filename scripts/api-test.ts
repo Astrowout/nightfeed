@@ -15,7 +15,7 @@ process.env.TZ = 'Europe/Brussels';
 const db = drizzle(new PGlite(), { schema });
 await migrate(db, { migrationsFolder: './drizzle' });
 await seedDemo(db as unknown as DB);
-const app = createApp(db as unknown as DB, readEnv({ BETTER_AUTH_SECRET: 'test-secret-test-secret-test-secret', BETTER_AUTH_URL: BASE, CRON_SECRET: 'cron' }));
+const app = createApp(db as unknown as DB, readEnv({ BETTER_AUTH_SECRET: 'test-secret-test-secret-test-secret', BETTER_AUTH_URL: BASE, CRON_SECRET: 'cron', EXPO_PUBLIC_APP_OPEN: 'true' }));
 
 let cookie = '';
 async function call(method: string, path: string, body?: unknown, extra: Record<string, string> = {}) {
@@ -133,6 +133,29 @@ const list = await call('GET', '/api/waitlist', undefined, { Authorization: 'Bea
 assert.equal(list.json.count, 1);
 assert.equal(list.json.entries[0].email, 'lotte@example.test');
 ok('waitlist saves each email once and only the team can read it');
+
+// Before launch (EXPO_PUBLIC_APP_OPEN unset) nobody gets in: no sign-up, no sign-in, no app routes.
+const closed = createApp(db as unknown as DB, readEnv({ BETTER_AUTH_SECRET: 'test-secret-test-secret-test-secret', BETTER_AUTH_URL: BASE }));
+const refused = await closed.fetch(
+  new Request(`${BASE}/api/auth/sign-up/email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Origin: BASE },
+    body: JSON.stringify({ email: 'early@example.test', password: 'testpass-12345', name: 'Early', healthConsent: true }),
+  }),
+);
+assert.equal(refused.status, 403);
+const refusedIn = await closed.fetch(
+  new Request(`${BASE}/api/auth/sign-in/email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Origin: BASE },
+    body: JSON.stringify({ email: 'lotte@example.test', password: 'testpass-12345' }),
+  }),
+);
+assert.equal(refusedIn.status, 403);
+assert.equal((await closed.fetch(new Request(`${BASE}/api/state`, { headers: { Cookie: cookie } }))).status, 403);
+assert.equal((await (await closed.fetch(new Request(`${BASE}/api/health`))).json()).appOpen, false);
+assert.equal((await closed.fetch(new Request(`${BASE}/api/waitlist`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'still@example.test' }) }))).status, 200);
+ok('closed before launch: no sign-up, no sign-in, no app routes; the waitlist still works');
 
 console.log('\nAll API checks passed.');
 process.exit(0);

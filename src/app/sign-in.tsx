@@ -6,6 +6,7 @@ import { Wordmark } from '../components/Wordmark';
 import { MascotSays } from '../components/MascotSays';
 import { Button, Field, Segmented } from '../components/Ui';
 import { authClient } from '../lib/auth';
+import { APP_OPEN } from '../lib/config';
 import { C, F, FLOAT, R, S, T } from '../theme';
 
 type Mode = 'sign-in' | 'sign-up';
@@ -30,7 +31,9 @@ export default function SignInScreen() {
     setBusy(true);
     const res =
       mode === 'sign-up'
-        ? await authClient.signUp.email({ email: email.trim(), password, name: name.trim(), healthConsent: true } as Parameters<typeof authClient.signUp.email>[0])
+        ? await authClient.signUp.email({ email: email.trim(), password, name: name.trim(), healthConsent: true } as Parameters<
+            typeof authClient.signUp.email
+          >[0])
         : await authClient.signIn.email({ email: email.trim(), password });
     setBusy(false);
     if (res.error) setError(res.error.message ?? 'That did not work. Check your details and try again.');
@@ -38,7 +41,10 @@ export default function SignInScreen() {
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: C.canvas }}>
-      <ScrollView contentContainerStyle={[st.page, { paddingTop: insets.top + 32, paddingBottom: insets.bottom + 40 }]} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={[st.page, { paddingTop: insets.top + 32, paddingBottom: insets.bottom + 40 }]}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={st.hero}>
           <View style={{ flexDirection: 'row' }}>
             <Wordmark size={27} onPress={Platform.OS === 'web' ? () => router.replace('/') : undefined} />
@@ -52,54 +58,73 @@ export default function SignInScreen() {
           </Text>
         </View>
 
-        <View style={[st.card, FLOAT]}>
-          <Segmented
-            options={[
-              { value: 'sign-up', label: 'Create account' },
-              { value: 'sign-in', label: 'Sign in' },
-            ]}
-            value={mode}
-            onChange={(m) => {
-              setMode(m);
-              setError(null);
-            }}
-          />
-          <View style={{ gap: S.lg, marginTop: S.xl }}>
-            {mode === 'sign-up' && <Field label="Your name" value={name} onChangeText={setName} autoComplete="name" textContentType="name" />}
-            <Field label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" autoComplete="email" keyboardType="email-address" textContentType="emailAddress" />
-            <Field
-              label="Password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              autoComplete={mode === 'sign-up' ? 'new-password' : 'current-password'}
-              textContentType={mode === 'sign-up' ? 'newPassword' : 'password'}
-              onSubmitEditing={submit}
-            />
-
-            {mode === 'sign-up' && (
-              <Pressable
-                onPress={() => setConsent(!consent)}
-                style={st.consent}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: consent }}
-              >
-                <View style={[st.box, consent && st.boxOn]}>{consent && <Text style={st.tick}>✓</Text>}</View>
-                <Text style={[T.small, { flex: 1, color: C.ink }]}>
-                  I agree that Kudoze stores my sleep data (health data) to show my nights, and shares nights with my followers unless I set
-                  them to “Only me”. I can download or delete everything from my profile.
-                </Text>
-              </Pressable>
-            )}
-
-            {error && (
-              <Text style={[T.small, { color: C.wine }]} accessibilityLiveRegion="polite">
-                {error}
-              </Text>
-            )}
-            <Button label={mode === 'sign-up' ? 'Create account' : 'Sign in'} onPress={submit} busy={busy} full />
+        {!APP_OPEN ? (
+          <View style={[st.card, FLOAT, { gap: S.sm }]}>
+            <Text style={T.title}>Kudoze isn’t open yet</Text>
+            <Text style={[T.body, { color: C.muted }]}>
+              We’re putting the last pillows in place. Leave your email on our website and we’ll tell you the day it opens.
+            </Text>
           </View>
-        </View>
+        ) : (
+          <View style={[st.card, FLOAT]}>
+            <Segmented
+              options={[
+                { value: 'sign-up', label: 'Create account' },
+                { value: 'sign-in', label: 'Sign in' },
+              ]}
+              value={mode}
+              onChange={(m) => {
+                setMode(m);
+                setError(null);
+              }}
+            />
+            <View style={{ gap: S.lg, marginTop: S.xl }}>
+              {mode === 'sign-up' && (
+                <Field label="Your name" value={name} onChangeText={setName} autoComplete="name" textContentType="name" />
+              )}
+              <Field
+                label="Email"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                autoComplete="email"
+                keyboardType="email-address"
+                textContentType="emailAddress"
+              />
+              <Field
+                label="Password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                autoComplete={mode === 'sign-up' ? 'new-password' : 'current-password'}
+                textContentType={mode === 'sign-up' ? 'newPassword' : 'password'}
+                onSubmitEditing={submit}
+              />
+
+              {mode === 'sign-up' && (
+                <Pressable
+                  onPress={() => setConsent(!consent)}
+                  style={st.consent}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: consent }}
+                >
+                  <View style={[st.box, consent && st.boxOn]}>{consent && <Text style={st.tick}>✓</Text>}</View>
+                  <Text style={[T.small, { flex: 1, color: C.ink }]}>
+                    I agree that Kudoze stores my sleep data (health data) to show my nights, and shares nights with my followers unless I
+                    set them to “Only me”. I can download or delete everything from my profile.
+                  </Text>
+                </Pressable>
+              )}
+
+              {error && (
+                <Text style={[T.small, { color: C.wine }]} accessibilityLiveRegion="polite">
+                  {error}
+                </Text>
+              )}
+              <Button label={mode === 'sign-up' ? 'Create account' : 'Sign in'} onPress={submit} busy={busy} full />
+            </View>
+          </View>
+        )}
 
         <Text style={[T.caption, { textAlign: 'center', marginTop: S.xl }]}>Demo mode: the people you meet inside are made up.</Text>
       </ScrollView>
@@ -112,7 +137,16 @@ const st = StyleSheet.create({
   hero: { paddingBottom: S.xxl, overflow: 'visible' },
   card: { backgroundColor: C.paper, borderRadius: R.sheet, padding: S.xl, borderWidth: 1, borderColor: C.line },
   consent: { flexDirection: 'row', gap: S.md, alignItems: 'flex-start' },
-  box: { width: 22, height: 22, borderRadius: 6, borderWidth: 1.5, borderColor: C.ink, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
+  box: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: C.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 1,
+  },
   boxOn: { backgroundColor: C.lilac },
   tick: { color: C.ink, fontFamily: F.sansBold, fontSize: 13, lineHeight: 16 },
 });

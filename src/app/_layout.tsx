@@ -8,10 +8,18 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Platform, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { authClient } from '../lib/auth';
+import { APP_OPEN } from '../lib/config';
 import { C } from '../theme';
 
 const WEB = Platform.OS === 'web';
 const HINT = 'kudoze.signedIn';
+
+// Before launch the website is only the landing page. Send any other address (an old link to a
+// night, /sign-in, /log) to it before the router starts, so the router never has to resolve a
+// guarded route, which loops because '/' is both the landing page and the app's feed.
+if (WEB && !APP_OPEN && typeof window !== 'undefined' && window.location.pathname !== '/') {
+  window.location.replace('/');
+}
 
 /** Web only: remembers whether this browser was signed in last time, so we know what to show before the session check returns. */
 function readHint(): boolean {
@@ -47,7 +55,8 @@ export default function RootLayout() {
   const pathname = usePathname();
   const [hint] = useState(readHint);
 
-  const signedIn = Boolean(session?.user);
+  // Before launch nobody counts as signed in, whatever an old cookie says.
+  const signedIn = APP_OPEN && Boolean(session?.user);
   useEffect(() => {
     if (!isPending) writeHint(signedIn);
   }, [isPending, signedIn]);
@@ -56,7 +65,7 @@ export default function RootLayout() {
   // Web: paint straight away. Fonts swap in when they arrive, and visitors who were
   // not signed in last time see the landing page without waiting for the session check.
   const publicPath = pathname === '/' || pathname === '/sign-in';
-  const waitForSession = isPending && (!WEB || hint || !publicPath);
+  const waitForSession = APP_OPEN && isPending && (!WEB || hint || !publicPath);
   if ((!WEB && !fontsLoaded) || waitForSession) {
     return (
       <View style={{ flex: 1, backgroundColor: C.canvas, alignItems: 'center', justifyContent: 'center' }}>
@@ -69,14 +78,16 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.canvas } }}>
-        <Stack.Protected guard={signedIn}>
+        {/* Guarded app pages go to /sign-in, never to '/', which would match the guarded feed again. */}
+        <Stack.Protected guard={signedIn} redirectTo="/sign-in">
           <Stack.Screen name="(app)" />
         </Stack.Protected>
         {/* Landing page: web only; the phone apps open at sign-in. */}
         <Stack.Protected guard={!signedIn && WEB}>
           <Stack.Screen name="index" />
         </Stack.Protected>
-        <Stack.Protected guard={!signedIn}>
+        {/* While closed the web has only the landing page; the phone apps show the closed notice on sign-in. */}
+        <Stack.Protected guard={!signedIn && (APP_OPEN || !WEB)}>
           <Stack.Screen name="sign-in" />
         </Stack.Protected>
       </Stack>

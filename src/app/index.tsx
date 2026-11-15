@@ -10,6 +10,7 @@ import { MascotSays } from '../components/MascotSays';
 import { Wordmark } from '../components/Wordmark';
 import { Button, Tag } from '../components/Ui';
 import { ApiError, api } from '../lib/auth';
+import { APP_OPEN } from '../lib/config';
 import { C, F, R, S, T } from '../theme';
 
 // Public landing page. Only signed-out visitors on the web reach it (see app/_layout.tsx);
@@ -167,7 +168,7 @@ function Nav({ onKeepPosted, onHome, joined }: { onKeepPosted: () => void; onHom
       <View style={[st.wrap, st.navInner]}>
         <Wordmark size={27} onPress={onHome} />
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: S.sm }}>
-          <Button label="Log in" kind="ghost" small onPress={logIn} />
+          {APP_OPEN && <Button label="Log in" kind="ghost" small onPress={logIn} />}
           {!joined && <Button label="Keep me posted" small onPress={onKeepPosted} />}
         </View>
       </View>
