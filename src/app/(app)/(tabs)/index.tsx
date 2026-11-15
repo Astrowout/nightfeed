@@ -14,8 +14,10 @@ import { C, F, MAX_W, S, T, scoreTag } from '../../../theme';
 
 function NightBand() {
   const { state } = useStore();
+  // Read the clock once per mount, not on every render (keeps render pure).
+  const [now] = useState(Date.now);
   const last = nightsOf(state, state.meId).find((n) => !n.session.is_nap);
-  const lastIsRecent = last && Date.now() - Date.parse(last.session.end_time) < 30 * 3600000;
+  const lastIsRecent = last && now - Date.parse(last.session.end_time) < 30 * 3600000;
   const week = periodStats(state, state.meId, 7);
   const run = streak(state, state.meId);
 

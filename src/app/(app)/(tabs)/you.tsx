@@ -34,7 +34,7 @@ export default function YouScreen() {
       } else {
         const redirectUri = Platform.OS === 'web' ? `${window.location.origin}/you` : 'nightfeed://you';
         const { url } = await api<{ url: string }>(`/connect/${p}`, { method: 'POST', body: { redirectUri } });
-        if (Platform.OS === 'web') window.location.href = url;
+        if (Platform.OS === 'web') window.location.assign(url);
         else {
           await WebBrowser.openAuthSessionAsync(url, redirectUri);
           await refresh();

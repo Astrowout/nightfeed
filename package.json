@@ -38,6 +38,8 @@
     "@types/node": "^26.6.6",
     "@types/react": "~19.3.0",
     "drizzle-kit": "^0.31.11",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~58.0.4",
     "tsx": "^4.23.15",
     "typescript": "~6.0.3"
   },
@@ -51,7 +53,8 @@
     "test:api": "tsx scripts/api-test.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts",
-    "local": "tsx scripts/local-server.ts"
+    "local": "tsx scripts/local-server.ts",
+    "lint": "expo lint"
   },
   "private": true,
   "type": "module",

@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { Avatar } from '../../../components/Avatar';
 import { PaperScrap } from '../../../components/Collage';
@@ -13,6 +13,8 @@ const PASTEL = [C.mint, C.marigold, C.periwinkle, C.lilac];
 
 export default function ChallengesScreen() {
   const { state, dispatch } = useStore();
+  // Read the clock once per mount, not on every render (keeps render pure).
+  const [now] = useState(Date.now);
 
   return (
     <Screen>
@@ -30,7 +32,7 @@ export default function ChallengesScreen() {
         const target = c.kind.nights;
         const board = c.board ?? c.participants.map((p) => ({ userId: p, value: 0 }));
         const mine = board.find((b) => b.userId === state.meId)?.value ?? 0;
-        const daysLeft = Math.max(0, Math.ceil((Date.parse(`${c.endDate}T23:59:59`) - Date.now()) / 86400000));
+        const daysLeft = Math.max(0, Math.ceil((Date.parse(`${c.endDate}T23:59:59`) - now) / 86400000));
         const done = mine >= target;
 
         return (

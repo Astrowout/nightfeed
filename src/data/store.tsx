@@ -63,9 +63,24 @@ export function StoreProvider({ children, fallback }: { children: React.ReactNod
     }
   }, []);
 
+  // First load. State is set only in the promise callbacks, and a late answer after
+  // unmount is ignored. refresh() above stays for retries and pull-to-refresh.
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+    let live = true;
+    api<AppState>('/state').then(
+      (s) => {
+        if (!live) return;
+        local({ type: 'hydrate', state: s });
+        setError(null);
+      },
+      (e: unknown) => {
+        if (live) setError(e instanceof Error ? e.message : 'Could not load your feed.');
+      },
+    );
+    return () => {
+      live = false;
+    };
+  }, []);
 
   const dispatch = useCallback(
     (a: Action) => {

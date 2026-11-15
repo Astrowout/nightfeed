@@ -4,7 +4,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, Platform, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { authClient } from '../lib/auth';
 import { C } from '../theme';
@@ -35,6 +35,10 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.canvas } }}>
         <Stack.Protected guard={signedIn}>
           <Stack.Screen name="(app)" />
+        </Stack.Protected>
+        {/* Landing page: web only; the phone apps open at sign-in. */}
+        <Stack.Protected guard={!signedIn && Platform.OS === 'web'}>
+          <Stack.Screen name="index" />
         </Stack.Protected>
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="sign-in" />
