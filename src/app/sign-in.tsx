@@ -2,8 +2,7 @@ import { useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { PaperScrap } from '../components/Collage';
-import { Mascot } from '../components/Mascot';
+import { MascotSays } from '../components/MascotSays';
 import { Button, Field, Segmented } from '../components/Ui';
 import { authClient } from '../lib/auth';
 import { C, F, FLOAT, R, S, T } from '../theme';
@@ -40,14 +39,13 @@ export default function SignInScreen() {
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: C.canvas }}>
       <ScrollView contentContainerStyle={[st.page, { paddingTop: insets.top + 32, paddingBottom: insets.bottom + 40 }]} keyboardShouldPersistTaps="handled">
         <View style={st.hero}>
-          <PaperScrap width={92} height={56} color={C.mint} seed={3} rotate={-7} style={{ top: -22, right: 58 }} />
-          <PaperScrap width={70} height={44} color={C.marigold} seed={8} rotate={8} style={{ top: 8, right: 4 }} />
-          <PaperScrap width={46} height={64} color={C.periwinkle} seed={13} rotate={-4} style={{ top: -30, right: -6 }} />
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Mascot size={44} />
             <Text style={[T.title, { fontFamily: F.serif, fontSize: 22 }]}>nightfeed</Text>
           </View>
-          <Text style={[T.display, { marginTop: S.xxl, maxWidth: 330 }]}>Your nights, kept together.</Text>
+          <MascotSays size={96} mascot={{ smile: true, bowTie: true }} style={{ marginTop: S.xl }}>
+            Hi, I’m Plume. Let’s get you to bed.
+          </MascotSays>
+          <Text style={[T.display, { marginTop: S.lg, maxWidth: 330 }]}>Your nights, kept together.</Text>
           <Text style={[T.body, { color: C.muted, marginTop: S.md, maxWidth: 360 }]}>
             Post last night from your watch or ring, give friends kudos for a good one, and keep each other to a bedtime.
           </Text>

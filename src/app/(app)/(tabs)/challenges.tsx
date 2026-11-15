@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { Avatar } from '../../../components/Avatar';
-import { PaperScrap } from '../../../components/Collage';
+import { MascotSays } from '../../../components/MascotSays';
 import { Button, Card, Progress, Screen } from '../../../components/Ui';
 import { sleeper } from '../../../data/selectors';
 import { useStore } from '../../../data/store';
@@ -19,12 +19,13 @@ export default function ChallengesScreen() {
   return (
     <Screen>
       <View style={{ marginTop: S.xxl, marginBottom: S.xl }}>
-        <PaperScrap width={64} height={44} color={C.periwinkle} seed={34} rotate={-8} style={{ right: 44, top: -6 }} />
-        <PaperScrap width={46} height={34} color={C.mint} seed={35} rotate={9} style={{ right: 4, top: 6 }} />
         <Text style={T.h1}>Challenges</Text>
         <Text style={[T.body, { color: C.muted, marginTop: 6, maxWidth: 420 }]}>
           They reward going to bed on time, not the most hours. Only people who join show on the board.
         </Text>
+        <MascotSays size={84} mascot={{ hat: 'crown', smile: true }} style={{ marginTop: S.lg }}>
+          Early to bed is how you win here. I believe in you.
+        </MascotSays>
       </View>
 
       {state.challenges.map((c, i) => {
@@ -99,9 +100,9 @@ export default function ChallengesScreen() {
         );
       })}
       {state.challenges.length === 0 && (
-        <Card>
-          <Text style={T.body}>No challenges running right now. A new round starts every two weeks.</Text>
-        </Card>
+        <MascotSays size={84} mascot={{ state: 'sleeping' }}>
+          No challenges running right now. A new round starts every two weeks.
+        </MascotSays>
       )}
     </Screen>
   );

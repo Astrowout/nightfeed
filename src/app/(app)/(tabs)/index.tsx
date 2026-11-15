@@ -4,6 +4,7 @@ import { Pressable, Text, View } from 'react-native';
 import { Avatar } from '../../../components/Avatar';
 import { WeekBars } from '../../../components/Charts';
 import { Mascot } from '../../../components/Mascot';
+import { MascotSays } from '../../../components/MascotSays';
 import { NightCard } from '../../../components/NightCard';
 import { Button, Card, Screen, TopBar } from '../../../components/Ui';
 import { clock, hm, nightLabel } from '../../../data/format';
@@ -146,9 +147,9 @@ export default function FeedScreen() {
         <Text style={T.small}>{state.following.length} sleepers</Text>
       </View>
       {items.length === 0 && (
-        <Card>
-          <Text style={T.body}>Nothing here yet. Log a night or follow someone to fill your feed.</Text>
-        </Card>
+        <MascotSays size={84} mascot={{ state: 'sleeping' }}>
+          It’s quiet in here. Log a night or follow someone and I’ll fill your feed.
+        </MascotSays>
       )}
       {items.slice(0, limit).map((n) => (
         <NightCard key={n.id} night={n} />

@@ -3,6 +3,7 @@ import * as WebBrowser from 'expo-web-browser';
 import React, { useState } from 'react';
 import { Platform, Pressable, Share, Text, View } from 'react-native';
 import { Avatar } from '../../../components/Avatar';
+import { MascotSays } from '../../../components/MascotSays';
 import { ProfileBody } from '../../../components/ProfileBody';
 import { Button, Card, Chip, Screen, Section, TextLink } from '../../../components/Ui';
 import { PROVIDER_LABEL } from '../../../data/generate';
@@ -152,6 +153,9 @@ export default function YouScreen() {
       </Section>
 
       <View style={{ marginTop: S.xxl, alignItems: 'center', gap: S.sm }}>
+        <MascotSays size={72} mascot={{ state: 'sleeping' }} style={{ marginBottom: S.md }}>
+          Sleep well. I’ll keep your nights safe.
+        </MascotSays>
         <Button kind="ghost" label="Sign out" onPress={() => authClient.signOut()} />
         <Text style={T.caption}>{state.mode === 'demo' ? 'Demo mode · the other people here are made up' : 'Synced through Open Wearables'}</Text>
       </View>

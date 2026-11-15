@@ -1,20 +1,33 @@
-// Nightfeed's mascot, built on bot-avatars (MIT, Jakub Antalik, https://libraries.dev/bots).
-// Two looks: a plush full moon (default) or a pillow. Switch with MASCOT_LOOK.
+// Nightfeed's mascot, Plume: a plush pillow built on bot-avatars
+// (MIT, Jakub Antalik, https://libraries.dev/bots). Like a brand bear, it is the
+// same character everywhere, in different moods and outfits.
+// A full-moon look is kept as an alternative: switch with MASCOT_LOOK.
 
 export type MascotLook = 'moon' | 'pillow';
 export type MascotState = 'default' | 'working' | 'sleeping';
+export type MascotHat = 'none' | 'beret' | 'beanie' | 'party' | 'crown';
+export type MascotGlasses = 'none' | 'round' | 'square' | 'shades';
 
-export const MASCOT_LOOK: MascotLook = 'moon';
+export const MASCOT_LOOK: MascotLook = 'pillow';
+export const MASCOT_NAME = 'Plume';
 
 export interface MascotProps {
   size?: number;
-  /** idle looks around; working hops (syncing, loading); sleeping dozes in a nightcap */
+  /** idle looks around; working hops (syncing, loading); sleeping dozes, in a nightcap unless another hat is given */
   state?: MascotState;
   /** the surface behind it */
   onDark?: boolean;
   look?: MascotLook;
   /** follow the pointer and hop on click */
   interactive?: boolean;
+  /** a small mouth that changes with the state (always on while working) */
+  smile?: boolean;
+  hat?: MascotHat;
+  glasses?: MascotGlasses;
+  headphones?: boolean;
+  bowTie?: boolean;
+  /** colour of the hat, headphones and bow tie; Midnight Wine by default */
+  accessoryColor?: string;
   label?: string;
 }
 
@@ -28,11 +41,11 @@ export const LOOKS = {
     path: undefined as string | undefined,
     color: '#F1E6C4', // moonlight cream
     brightness: 1.12,
-    craters: '#E2D3A6',
+    craters: '#E2D3A6' as string | undefined,
   },
   pillow: {
     type: 'square' as const,
-    path: PILLOW_PATH,
+    path: PILLOW_PATH as string | undefined,
     color: '#EEEAF8', // pillowcase, a breath of lilac
     brightness: 1,
     craters: undefined as string | undefined,
@@ -40,3 +53,9 @@ export const LOOKS = {
 };
 
 export const NIGHTCAP = '#421D24'; // Midnight Wine, the same as the primary action
+
+export function mascotLabel(p: MascotProps): string {
+  if (p.label) return p.label;
+  const mood = p.state === 'sleeping' ? 'asleep' : p.state === 'working' ? 'busy' : 'awake';
+  return `${MASCOT_NAME} the pillow, ${mood}`;
+}

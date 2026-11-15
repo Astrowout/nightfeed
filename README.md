@@ -56,7 +56,7 @@ All routes are under `/api`; everything except auth, webhooks and cron needs a s
 
 The look merges two references: Superhuman (warm parchment canvas, white hairline cards, Midnight Wine as the only filled action, Lilac for selected states, Violet for links, Deep Lagoon as the single dark "night" band) and Craft Docs (Lora serif headlines over Inter, pastel stage colours and tags, torn-paper collage scraps, pill buttons, soft layered shadows on floating elements only). Tokens live in `src/theme.ts`.
 
-The mascot is a plush full moon from [bot-avatars](https://libraries.dev/bots) (MIT, Jakub Antalik): it looks around when idle, hops while the app loads or syncs, and sleeps in a wine-coloured beanie when there is no night yet. A pillow look is one line away (`MASCOT_LOOK` in `src/components/mascotConfig.ts`). On the web it is animated; the phone apps show a still drawing until the library's React Native port is on npm.
+The mascot is **Plume**, a plush pillow made with [bot-avatars](https://libraries.dev/bots) (MIT, Jakub Antalik). Like a brand bear, it is one character everywhere, in different moods and outfits: it greets you in speech bubbles (`MascotSays`), wears headphones, a party hat, a crown or shades on the landing page, hops while the app loads or syncs, and sleeps in a wine beanie on empty states and the not-found page. The app icon, splash and favicon are rendered from it. A full-moon look is kept as an alternative (`MASCOT_LOOK` in `src/components/mascotConfig.ts`). On the web Plume is animated; the phone apps show a still drawing until the library's React Native port is on npm.
 
 ## Privacy
 

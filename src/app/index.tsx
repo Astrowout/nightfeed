@@ -5,8 +5,10 @@ import { Platform, ScrollView, StyleSheet, Text, useWindowDimensions, View } fro
 import { BrandWall } from '../components/BrandLogos';
 import { Hypnogram, ScoreRing } from '../components/Charts';
 import { PaperScrap } from '../components/Collage';
-import { CommentIcon, LockIcon, MoonIcon, StarIcon, TrophyIcon, WatchIcon } from '../components/Icons';
+import { CommentIcon, StarIcon } from '../components/Icons';
 import { Mascot } from '../components/Mascot';
+import type { MascotProps } from '../components/mascotConfig';
+import { MascotSays } from '../components/MascotSays';
 import { Button, Stat, Tag } from '../components/Ui';
 import { buildSession, rng } from '../data/generate';
 import { C, F, FLOAT, R, S, T, scoreTag } from '../theme';
@@ -56,9 +58,15 @@ export default function Landing() {
           </View>
 
           <View style={[st.heroArt, wide ? { flex: 1 } : { marginTop: S.section + 8 }]}>
-            <PaperScrap width={150} height={96} color={C.mint} seed={4} rotate={-8} style={{ top: -34, left: -18 }} />
+            <PaperScrap width={150} height={96} color={C.mint} seed={4} rotate={-8} style={{ top: 20, left: -18 }} />
             <PaperScrap width={110} height={140} color={C.periwinkle} seed={9} rotate={6} style={{ bottom: -30, right: -14 }} />
-            <PaperScrap width={84} height={54} color={C.marigold} seed={15} rotate={-4} style={{ top: 40, right: -26 }} />
+            <MascotSays
+              size={wide ? 132 : 108}
+              mascot={{ smile: true, bowTie: true }}
+              style={{ alignSelf: 'flex-start', marginBottom: -14, marginLeft: wide ? -24 : -8, zIndex: 2 }}
+            >
+              Hi, I’m Plume. Mira slept 7h 32m. That’s worth a kudos!
+            </MascotSays>
             <SampleNight />
           </View>
         </View>
@@ -66,6 +74,11 @@ export default function Landing() {
         {/* Devices */}
         <View style={st.devices}>
           <View style={st.wrap}>
+            <View style={{ alignItems: 'center', marginBottom: S.xl }}>
+              <MascotSays size={76} mascot={{ headphones: true }}>
+                I listen to your watch, ring or phone. You just sleep.
+              </MascotSays>
+            </View>
             <Text style={[T.eyebrow, { textAlign: 'center', marginBottom: S.xl }]}>Works with what you already wear</Text>
             <BrandWall />
           </View>
@@ -79,19 +92,19 @@ export default function Landing() {
           <View style={[st.features, wide && { flexDirection: 'row' }]}>
             <Feature
               color={C.periwinkle}
-              icon={<WatchIcon size={22} color={C.ink} />}
+              plume={{ state: 'working' }}
               title="Post last night"
               body="Your night syncs from your device each morning: time asleep, stages and a score. Add a note, then post it or keep it to yourself."
             />
             <Feature
               color={C.peach}
-              icon={<StarIcon size={22} color={C.ink} />}
+              plume={{ hat: 'party', smile: true, accessoryColor: C.violet }}
               title="Kudos and comments"
               body="Follow friends, family or your running club. Give kudos for a solid eight hours and a kind word after a rough one."
             />
             <Feature
               color={C.marigold}
-              icon={<TrophyIcon size={22} color={C.ink} />}
+              plume={{ hat: 'crown', smile: true }}
               title="Bedtime challenges"
               body="Join a challenge, from lights out before 23:00 to seven nights in a row of seven hours, and climb the leaderboard together."
             />
@@ -102,7 +115,9 @@ export default function Landing() {
         <View style={st.band}>
           <View style={[st.wrap, wide && { flexDirection: 'row', alignItems: 'flex-start', gap: 64 }]}>
             <View style={[{ gap: S.md }, wide && { flex: 1 }]}>
-              <LockIcon size={26} color={C.mint} />
+              <MascotSays size={96} onDark mascot={{ glasses: 'shades' }} style={{ marginBottom: S.md }}>
+                What happens in bed stays in bed.
+              </MascotSays>
               <Text style={[T.h1, { color: C.onDark }, wide && { fontSize: 40, lineHeight: 44 }]}>Your sleep stays yours.</Text>
               <Text style={[T.body, { color: C.onDarkMuted, maxWidth: 440 }]}>
                 Sleep data is health data, so we treat it that way. You decide who sees each night, and you can take everything with you.
@@ -118,7 +133,8 @@ export default function Landing() {
 
         {/* Closing call to action */}
         <View style={[st.wrap, { paddingVertical: 96, alignItems: 'center' }]}>
-          <Mascot size={132} state="sleeping" />
+          <Mascot size={150} state="sleeping" />
+          <Text style={[T.caption, { marginTop: S.sm, fontFamily: F.serifItalic, fontSize: 15 }]}>Plume is already in bed. Zzz…</Text>
           <Text style={[T.h1, { textAlign: 'center', marginTop: S.lg }, wide && { fontSize: 48, lineHeight: 52, letterSpacing: -1.5 }]}>
             Tonight is a good night to start.
           </Text>
@@ -197,10 +213,12 @@ function SampleNight() {
   );
 }
 
-function Feature({ color, icon, title, body }: { color: string; icon: React.ReactNode; title: string; body: string }) {
+function Feature({ color, plume, title, body }: { color: string; plume: MascotProps; title: string; body: string }) {
   return (
     <View style={st.feature}>
-      <View style={[st.featureIcon, { backgroundColor: color }]}>{icon}</View>
+      <View style={[st.featureArt, { backgroundColor: color }]}>
+        <Mascot size={112} {...plume} />
+      </View>
       <Text style={[T.title, { marginTop: S.lg }]}>{title}</Text>
       <Text style={[T.body, { color: C.muted, marginTop: S.sm }]}>{body}</Text>
     </View>
@@ -221,7 +239,7 @@ function Footer() {
     <View style={st.footer}>
       <View style={[st.wrap, { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: S.md }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <MoonIcon size={16} color={C.muted} filled />
+          <Mascot size={28} interactive={false} />
           <Text style={T.small}>© {new Date().getFullYear()} Nightfeed</Text>
         </View>
         <Text style={T.small}>Demo mode: the people you meet inside are made up.</Text>
@@ -271,7 +289,7 @@ const st = StyleSheet.create({
   devices: { borderTopWidth: 1, borderBottomWidth: 1, borderColor: C.line, backgroundColor: C.paper, paddingVertical: 44 },
   features: { marginTop: 48, gap: S.lg },
   feature: { flex: 1, backgroundColor: C.paper, borderRadius: R.card, borderWidth: 1, borderColor: C.line, padding: S.xl },
-  featureIcon: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  featureArt: { height: 150, borderRadius: R.input, alignItems: 'center', justifyContent: 'center', overflow: 'visible' },
   band: { backgroundColor: C.lagoon, paddingVertical: 88 },
   footer: { borderTopWidth: 1, borderTopColor: C.line, paddingVertical: S.xl },
 });
