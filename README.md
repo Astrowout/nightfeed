@@ -37,18 +37,21 @@ Open Wearables needs always-on workers (Celery, Redis), so it runs on a Docker h
 
 ## API
 
-All routes are under `/api`; everything except auth, webhooks and cron needs a session.
+All routes are under `/api`; everything except auth, the waitlist, webhooks and cron needs a session.
 
 | Route | What it does |
 | --- | --- |
 | `/auth/*` | Better Auth: sign-up (requires `healthConsent: true`), sign-in, sign-out, session |
 | `GET /state` | Everything the app shows: you, the people you follow, their nights from the last 35 days, challenges with leaderboards |
 | `POST /nights`, `GET/PATCH/DELETE /nights/:id` | Post, read, change visibility, delete a night (score computed on the server) |
+| `PUT/DELETE /nights/:id/photo`, `GET /photos/:id` | Photo of the day: one per night, resized on the device first; only people who can see the night can load it |
 | `POST/DELETE /nights/:id/kudos`, `POST /nights/:id/comments` | Social |
 | `POST/DELETE /follows/:id`, `POST/DELETE /challenges/:id/join` | Follow, join |
 | `POST /sync` | Last night as a draft (demo, or from Open Wearables) |
 | `POST /connect/:provider`, `POST /connect/sdk-token` | Link a device / tokens for the phone SDK |
 | `GET /me/export`, `DELETE /me` | Download or delete all your data |
+| `POST /waitlist` | Landing page: save an email to hear when Kudoze opens (public) |
+| `GET /waitlist` | The waitlist, for the team (`Authorization: Bearer $CRON_SECRET`) |
 | `POST /webhooks/open-wearables` | Svix-signed Open Wearables events, deduplicated |
 | `GET /cron/daily` | New challenge rounds, demo nights, missed-webhook catch-up |
 
@@ -56,7 +59,7 @@ All routes are under `/api`; everything except auth, webhooks and cron needs a s
 
 The look merges two references: Superhuman (warm parchment canvas, white hairline cards, Midnight Wine as the only filled action, Lilac for selected states, Violet for links, Deep Lagoon as the single dark "night" band) and Craft Docs (Lora serif headlines over Inter, pastel stage colours and tags, torn-paper collage scraps, pill buttons, soft layered shadows on floating elements only). Tokens live in `src/theme.ts`.
 
-The mascot is **Plume**, a plush pillow made with [bot-avatars](https://libraries.dev/bots) (MIT, Jakub Antalik). Like a brand bear, it is one character everywhere, in different moods and outfits: it greets you in speech bubbles (`MascotSays`), wears headphones, a party hat, a crown or shades on the landing page, hops while the app loads or syncs, and sleeps in a wine beanie on empty states and the not-found page. The app icon, splash and favicon are rendered from it. A full-moon look is kept as an alternative (`MASCOT_LOOK` in `src/components/mascotConfig.ts`). On the web Plume is animated; the phone apps show a still drawing until the library's React Native port is on npm.
+The mascot is **Plume**, a plush pillow made with [bot-avatars](https://libraries.dev/bots) (MIT, Jakub Antalik). Like a brand bear, it is one character everywhere, in different moods and outfits: it greets you in speech bubbles (`MascotSays`), wears headphones, a bow tie or shades on the landing page (never a hat), hops while the app loads or syncs, and dozes on empty states and the not-found page. The app icon, splash and favicon are rendered from it. A full-moon look is kept as an alternative (`MASCOT_LOOK` in `src/components/mascotConfig.ts`). On the web Plume is animated; the phone apps show a still drawing until the library's React Native port is on npm.
 
 ## Privacy
 
