@@ -54,7 +54,7 @@ export const S = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32, section: 40 };
 export const MAX_W = 680;
 
 export const F = {
-  logo: 'Fraunces_900Black_Italic', // wordmark only
+  logo: 'DynaPuff_600SemiBold', // wordmark only: puffy, like Plume
   serif: 'Lora_400Regular',
   serifItalic: 'Lora_400Regular_Italic',
   sans: 'Inter_400Regular',

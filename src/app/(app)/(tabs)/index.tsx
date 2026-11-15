@@ -89,7 +89,7 @@ export default function FeedScreen() {
     <TopBar
       left={
         <View style={{ paddingLeft: 4 }}>
-          <Wordmark size={23} mascot={30} onPress={() => router.navigate('/')} label="Kudoze feed" />
+          <Wordmark size={24} onPress={() => router.navigate('/')} label="Kudoze feed" />
         </View>
       }
       right={

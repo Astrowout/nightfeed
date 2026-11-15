@@ -41,7 +41,7 @@ export default function SignInScreen() {
       <ScrollView contentContainerStyle={[st.page, { paddingTop: insets.top + 32, paddingBottom: insets.bottom + 40 }]} keyboardShouldPersistTaps="handled">
         <View style={st.hero}>
           <View style={{ flexDirection: 'row' }}>
-            <Wordmark size={24} mascot={32} onPress={Platform.OS === 'web' ? () => router.replace('/') : undefined} />
+            <Wordmark size={27} onPress={Platform.OS === 'web' ? () => router.replace('/') : undefined} />
           </View>
           <MascotSays size={96} mascot={{ smile: true, bowTie: true }} style={{ marginTop: S.xl }}>
             Hi, I’m Plume. Let’s get you to bed.

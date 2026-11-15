@@ -165,7 +165,7 @@ function Nav({ onKeepPosted, onHome, joined }: { onKeepPosted: () => void; onHom
   return (
     <View style={st.nav}>
       <View style={[st.wrap, st.navInner]}>
-        <Wordmark size={24} mascot={36} onPress={onHome} />
+        <Wordmark size={27} onPress={onHome} />
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: S.sm }}>
           <Button label="Log in" kind="ghost" small onPress={logIn} />
           {!joined && <Button label="Keep me posted" small onPress={onKeepPosted} />}
