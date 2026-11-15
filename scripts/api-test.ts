@@ -100,8 +100,24 @@ const cron = await call('GET', '/api/cron/daily', undefined, { Authorization: 'B
 assert.equal(cron.status, 200);
 ok(`cron runs (demo nights added: ${cron.json.demoAdded})`);
 
+// A real 1x1 JPEG, base64
+const JPEG = '/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=';
+assert.equal((await call('PUT', `/api/nights/${posted.json.id}/photo`, { data: btoa('not an image at all, just text'.repeat(5)), mime: 'image/jpeg', width: 1, height: 1 })).status, 400);
+const up = await call('PUT', `/api/nights/${posted.json.id}/photo`, { data: JPEG, mime: 'image/jpeg', width: 1, height: 1 });
+assert.equal(up.status, 200);
+const withPhoto = (await call('GET', `/api/nights/${posted.json.id}`)).json;
+assert.equal(withPhoto.photo.id, up.json.id);
+const img = await app.fetch(new Request(`${BASE}/api/photos/${up.json.id}`, { headers: { Cookie: cookie } }));
+assert.equal(img.status, 200);
+assert.equal(img.headers.get('content-type'), 'image/jpeg');
+const again = await call('PUT', `/api/nights/${posted.json.id}/photo`, { data: JPEG, mime: 'image/jpeg', width: 1, height: 1 });
+assert.notEqual(again.json.id, up.json.id);
+assert.equal((await app.fetch(new Request(`${BASE}/api/photos/${up.json.id}`, { headers: { Cookie: cookie } }))).status, 404);
+assert.equal((await app.fetch(new Request(`${BASE}/api/photos/${again.json.id}`))).status, 401);
+ok('photo of the day: upload, replace, checked file type, private to viewers');
+
 const exp = await call('GET', '/api/me/export');
-assert.ok(exp.json.nights.length > 0 && !('owUserId' in exp.json.profile));
+assert.ok(exp.json.nights.length > 0 && !('owUserId' in exp.json.profile) && exp.json.photos.length === 1);
 ok('export returns your data');
 
 assert.equal((await call('DELETE', '/api/me')).status, 200);

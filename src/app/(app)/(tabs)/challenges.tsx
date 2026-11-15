@@ -23,7 +23,7 @@ export default function ChallengesScreen() {
         <Text style={[T.body, { color: C.muted, marginTop: 6, maxWidth: 420 }]}>
           They reward going to bed on time, not the most hours. Only people who join show on the board.
         </Text>
-        <MascotSays size={84} mascot={{ hat: 'crown', smile: true }} style={{ marginTop: S.lg }}>
+        <MascotSays size={84} mascot={{ smile: true }} style={{ marginTop: S.lg }}>
           Early to bed is how you win here. I believe in you.
         </MascotSays>
       </View>

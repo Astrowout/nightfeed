@@ -2,7 +2,7 @@ import { and, desc, eq, gte, inArray, lte, ne, notInArray, or } from 'drizzle-or
 import { asleepMinutes, bedtimeMinutes } from '../src/data/score.js';
 import type { Challenge, ChallengeKind, Night, Sleeper } from '../src/data/types.js';
 import type { DB } from './db.js';
-import { challengeParticipants, challenges, comments, follows, kudos, nights, user } from './schema.js';
+import { challengeParticipants, challenges, comments, follows, kudos, nightPhotos, nights, user } from './schema.js';
 
 const DAY = 86400000;
 export const FEED_DAYS = 35;
@@ -31,12 +31,21 @@ export function canSee(n: Pick<NightRow, 'userId' | 'visibility'>, viewerId: str
   return n.userId === viewerId || (n.visibility === 'followers' && following.includes(n.userId));
 }
 
+function photoOf(list: { id: string; nightId: string; width: number; height: number }[], nightId: string) {
+  const p = list.find((x) => x.nightId === nightId);
+  return p ? { id: p.id, width: p.width, height: p.height } : undefined;
+}
+
 export async function attachSocial(db: DB, rows: NightRow[]): Promise<Night[]> {
   if (!rows.length) return [];
   const ids = rows.map((r) => r.id);
-  const [k, c] = await Promise.all([
+  const [k, c, p] = await Promise.all([
     db.select().from(kudos).where(inArray(kudos.nightId, ids)),
     db.select().from(comments).where(inArray(comments.nightId, ids)).orderBy(comments.createdAt),
+    db
+      .select({ id: nightPhotos.id, nightId: nightPhotos.nightId, width: nightPhotos.width, height: nightPhotos.height })
+      .from(nightPhotos)
+      .where(inArray(nightPhotos.nightId, ids)),
   ]);
   return rows.map((r) => ({
     id: r.id,
@@ -50,6 +59,7 @@ export async function attachSocial(db: DB, rows: NightRow[]): Promise<Night[]> {
     comments: c
       .filter((x) => x.nightId === r.id)
       .map((x) => ({ id: x.id, authorId: x.userId, text: x.text, createdAt: x.createdAt.toISOString() })),
+    photo: photoOf(p, r.id),
   }));
 }
 

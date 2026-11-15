@@ -5,7 +5,6 @@
 
 export type MascotLook = 'moon' | 'pillow';
 export type MascotState = 'default' | 'working' | 'sleeping';
-export type MascotHat = 'none' | 'beret' | 'beanie' | 'party' | 'crown';
 export type MascotGlasses = 'none' | 'round' | 'square' | 'shades';
 
 export const MASCOT_LOOK: MascotLook = 'pillow';
@@ -13,7 +12,7 @@ export const MASCOT_NAME = 'Plume';
 
 export interface MascotProps {
   size?: number;
-  /** idle looks around; working hops (syncing, loading); sleeping dozes, in a nightcap unless another hat is given */
+  /** idle looks around; working hops (syncing, loading); sleeping dozes. Plume never wears a hat. */
   state?: MascotState;
   /** the surface behind it */
   onDark?: boolean;
@@ -22,11 +21,10 @@ export interface MascotProps {
   interactive?: boolean;
   /** a small mouth that changes with the state (always on while working) */
   smile?: boolean;
-  hat?: MascotHat;
   glasses?: MascotGlasses;
   headphones?: boolean;
   bowTie?: boolean;
-  /** colour of the hat, headphones and bow tie; Midnight Wine by default */
+  /** colour of the headphones and bow tie; Midnight Wine by default */
   accessoryColor?: string;
   label?: string;
 }
@@ -52,7 +50,7 @@ export const LOOKS = {
   },
 };
 
-export const NIGHTCAP = '#421D24'; // Midnight Wine, the same as the primary action
+export const ACCESSORY = '#421D24'; // Midnight Wine, the same as the primary action
 
 export function mascotLabel(p: MascotProps): string {
   if (p.label) return p.label;

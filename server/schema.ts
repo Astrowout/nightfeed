@@ -162,6 +162,20 @@ export const webhookEvents = pgTable('webhook_events', {
   receivedAt: timestamp('received_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+/** One optional photo of the day per night, stored as base64 (resized on the phone first, so a few hundred kB at most). */
+export const nightPhotos = pgTable('night_photos', {
+  id: text('id').primaryKey(), // changes on every upload, so the image URL can be cached for good
+  nightId: text('night_id')
+    .notNull()
+    .unique()
+    .references(() => nights.id, { onDelete: 'cascade' }),
+  mime: text('mime').notNull(),
+  data: text('data').notNull(),
+  width: integer('width').notNull(),
+  height: integer('height').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 /** People who left their email on the landing page to hear when Kudoze opens. */
 export const waitlist = pgTable('waitlist', {
   email: text('email').primaryKey(), // stored lowercased, so one row per address
@@ -182,4 +196,5 @@ export const schema = {
   challengeParticipants,
   webhookEvents,
   waitlist,
+  nightPhotos,
 };

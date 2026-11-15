@@ -9,7 +9,7 @@ import { addDemoLastNights, demoDraft, ensureChallenges } from './demo.js';
 import { isDemoMode, type Env } from './env.js';
 import { insertNight, validSession } from './nights.js';
 import { OpenWearables } from './ow.js';
-import { challengeParticipants, comments, follows, kudos, nights, user, waitlist, webhookEvents } from './schema.js';
+import { challengeParticipants, comments, follows, kudos, nightPhotos, nights, user, waitlist, webhookEvents } from './schema.js';
 import { attachSocial, buildState, canSee, followingOf } from './state.js';
 
 type Vars = { userId: string };
@@ -181,9 +181,10 @@ export function createApp(db: DB, env: Env) {
     const myComments = await db.select().from(comments).where(eq(comments.userId, me));
     const myKudos = await db.select().from(kudos).where(eq(kudos.userId, me));
     const myFollows = await db.select().from(follows).where(eq(follows.followerId, me));
+    const myPhotos = mine.length ? await db.select().from(nightPhotos).where(inArray(nightPhotos.nightId, mine.map((n) => n.id))) : [];
     const { owUserId: _ow, ...safeProfile } = profile;
     c.header('Content-Disposition', 'attachment; filename="kudoze-export.json"');
-    return c.json({ exportedAt: new Date().toISOString(), profile: safeProfile, nights: mine, comments: myComments, kudos: myKudos, follows: myFollows });
+    return c.json({ exportedAt: new Date().toISOString(), profile: safeProfile, nights: mine, photos: myPhotos, comments: myComments, kudos: myKudos, follows: myFollows });
   });
 
   /** GDPR: delete the account and everything linked to it. */
@@ -238,6 +239,54 @@ export function createApp(db: DB, env: Env) {
   app.delete('/nights/:id', async (c) => {
     const res = await db.delete(nights).where(and(eq(nights.id, c.req.param('id')), eq(nights.userId, c.get('userId')))).returning({ id: nights.id });
     return res.length ? c.json({ ok: true }) : c.json({ error: 'Night not found.' }, 404);
+  });
+
+  // ---- Photo of the day: one per night, owner only; resized on the phone before upload ----
+  const MAX_PHOTO_BYTES = 2_000_000;
+  const photoBody = z.object({
+    data: z.string().min(100).max(Math.ceil((MAX_PHOTO_BYTES * 4) / 3) + 4),
+    mime: z.enum(['image/jpeg', 'image/png', 'image/webp']),
+    width: z.number().int().min(1).max(8000),
+    height: z.number().int().min(1).max(8000),
+  });
+  /** Checks the first bytes, so the stored file really is the image type it claims to be. */
+  function looksLike(mime: string, bytes: Uint8Array) {
+    const b = Array.from(bytes.slice(0, 12));
+    if (mime === 'image/jpeg') return b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff;
+    if (mime === 'image/png') return b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47;
+    return String.fromCharCode(...b.slice(0, 4)) === 'RIFF' && String.fromCharCode(...b.slice(8, 12)) === 'WEBP';
+  }
+
+  app.put('/nights/:id/photo', async (c) => {
+    const body = photoBody.safeParse(await c.req.json().catch(() => null));
+    if (!body.success) return c.json({ error: 'Choose a JPEG, PNG or WebP photo under 2 MB.' }, 400);
+    const [own] = await db.select({ id: nights.id }).from(nights).where(and(eq(nights.id, c.req.param('id')), eq(nights.userId, c.get('userId'))));
+    if (!own) return c.json({ error: 'Night not found.' }, 404);
+    const bytes = Uint8Array.from(atob(body.data.data), (ch) => ch.charCodeAt(0));
+    if (bytes.length > MAX_PHOTO_BYTES || !looksLike(body.data.mime, bytes)) return c.json({ error: 'Choose a JPEG, PNG or WebP photo under 2 MB.' }, 400);
+    const photo = { id: crypto.randomUUID(), nightId: own.id, ...body.data, createdAt: new Date() };
+    await db
+      .insert(nightPhotos)
+      .values(photo)
+      .onConflictDoUpdate({ target: nightPhotos.nightId, set: { id: photo.id, mime: photo.mime, data: photo.data, width: photo.width, height: photo.height, createdAt: photo.createdAt } });
+    return c.json({ id: photo.id, width: photo.width, height: photo.height });
+  });
+
+  app.delete('/nights/:id/photo', async (c) => {
+    const [own] = await db.select({ id: nights.id }).from(nights).where(and(eq(nights.id, c.req.param('id')), eq(nights.userId, c.get('userId'))));
+    if (!own) return c.json({ error: 'Night not found.' }, 404);
+    await db.delete(nightPhotos).where(eq(nightPhotos.nightId, own.id));
+    return c.json({ ok: true });
+  });
+
+  // Same rule as the night itself: only people who can see the night can see its photo.
+  app.get('/photos/:id', async (c) => {
+    const [photo] = await db.select().from(nightPhotos).where(eq(nightPhotos.id, c.req.param('id')));
+    if (!photo || !(await loadVisible(photo.nightId, c.get('userId')))) return c.json({ error: 'Photo not found.' }, 404);
+    const bytes = Uint8Array.from(atob(photo.data), (ch) => ch.charCodeAt(0));
+    return new Response(bytes, {
+      headers: { 'Content-Type': photo.mime, 'Cache-Control': 'private, max-age=31536000, immutable', 'X-Content-Type-Options': 'nosniff' },
+    });
   });
 
   app.post('/nights/:id/kudos', async (c) => {

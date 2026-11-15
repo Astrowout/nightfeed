@@ -106,13 +106,13 @@ export default function Landing() {
             />
             <Feature
               color={C.peach}
-              plume={{ hat: 'party', smile: true, accessoryColor: C.violet }}
+              plume={{ smile: true, bowTie: true, accessoryColor: C.violet }}
               title="Kudos and comments"
               body="Follow friends, family or your running club. Give kudos for a solid eight hours and a kind word after a rough one."
             />
             <Feature
               color={C.marigold}
-              plume={{ hat: 'crown', smile: true }}
+              plume={{ smile: true, headphones: true }}
               title="Bedtime challenges"
               body="Join a challenge, from lights out before 23:00 to seven nights in a row of seven hours, and climb the leaderboard together."
             />

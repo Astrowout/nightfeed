@@ -2,8 +2,9 @@ import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { Avatar } from '../../../components/Avatar';
-import { Hypnogram, ScoreRing, StageBars, StageLegend } from '../../../components/Charts';
+import { ScoreRing, SleepStrip, StageBars } from '../../../components/Charts';
 import { BackIcon, StarIcon } from '../../../components/Icons';
+import { AddPhotoButton, NightPhoto } from '../../../components/NightPhoto';
 import { Button, Card, Divider, Progress, Screen, Section, Segmented, Stat, TopBar } from '../../../components/Ui';
 import { ago, clock, hm, nightLabel } from '../../../data/format';
 import { PROVIDER_LABEL } from '../../../data/generate';
@@ -11,13 +12,18 @@ import { WEIGHTS, asleepMinutes, scoreNight } from '../../../data/score';
 import { sleeper } from '../../../data/selectors';
 import { useStore } from '../../../data/store';
 import type { Visibility } from '../../../data/types';
+import { pickDayPhoto, removeDayPhoto, uploadDayPhoto } from '../../../lib/photo';
 import { C, F, MAX_W, R, S, T, scoreTag } from '../../../theme';
 
 const back = () => (router.canGoBack() ? router.back() : router.replace('/'));
 
 export default function NightScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const { state, dispatch } = useStore();
+  const { id, photo: photoParam } = useLocalSearchParams<{ id: string; photo?: string }>();
+  const { state, dispatch, refresh } = useStore();
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoNote, setPhotoNote] = useState<string | null>(
+    photoParam === 'failed' ? 'Your night is posted, but the photo didn’t upload. Try adding it again.' : null,
+  );
   const [text, setText] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
   const night = state.nights.find((n) => n.id === id);
@@ -92,8 +98,54 @@ export default function NightScreen() {
     </View>
   );
 
+  const choosePhoto = async () => {
+    setPhotoNote(null);
+    try {
+      const picked = await pickDayPhoto();
+      if (!picked) return;
+      setPhotoBusy(true);
+      await uploadDayPhoto(night.id, picked);
+      await refresh();
+    } catch (e) {
+      setPhotoNote(e instanceof Error ? e.message : 'The photo didn’t upload. Try again.');
+    } finally {
+      setPhotoBusy(false);
+    }
+  };
+
+  const removePhoto = async () => {
+    setPhotoBusy(true);
+    setPhotoNote(null);
+    try {
+      await removeDayPhoto(night.id);
+      await refresh();
+    } catch (e) {
+      setPhotoNote(e instanceof Error ? e.message : 'Couldn’t remove the photo. Try again.');
+    } finally {
+      setPhotoBusy(false);
+    }
+  };
+
   return (
     <Screen header={bar} band={band}>
+      {(night.photo || isMe) && (
+        <View style={{ marginTop: S.xl, gap: S.sm }}>
+          {night.photo ? (
+            <>
+              <NightPhoto photo={night.photo} />
+              {isMe && (
+                <View style={{ flexDirection: 'row', gap: S.sm }}>
+                  <Button small kind="ghost" label="Change photo" onPress={choosePhoto} busy={photoBusy} />
+                  <Button small kind="ghost" label="Remove photo" onPress={removePhoto} disabled={photoBusy} />
+                </View>
+              )}
+            </>
+          ) : (
+            <AddPhotoButton onPress={choosePhoto} busy={photoBusy} />
+          )}
+          {photoNote && <Text style={[T.small, { color: C.ink }]}>{photoNote}</Text>}
+        </View>
+      )}
       <Section
         title="Sleep stages"
         right={
@@ -103,8 +155,7 @@ export default function NightScreen() {
         }
       >
         <Card style={{ gap: S.lg }}>
-          <Hypnogram session={ses} />
-          <StageLegend />
+          <SleepStrip session={ses} height={20} />
           <Divider />
           {ses.stages?.deep_minutes != null ? (
             <StageBars session={ses} />

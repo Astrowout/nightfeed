@@ -32,8 +32,8 @@ export const C = {
 
 /** Hypnogram colours, the Craft pastels plus lagoon for deep sleep. */
 export const STAGE: Record<SleepStageType, { color: string; label: string; row: number }> = {
-  awake: { color: C.papaya, label: 'Awake', row: 0 },
-  in_bed: { color: C.papaya, label: 'In bed', row: 0 },
+  awake: { color: '#F2A285', label: 'Awake', row: 0 },
+  in_bed: { color: '#F2A285', label: 'In bed', row: 0 },
   rem: { color: '#6CC384', label: 'REM', row: 1 },
   light: { color: '#93ABEC', label: 'Light', row: 2 },
   sleeping: { color: '#93ABEC', label: 'Asleep', row: 2 },

@@ -7,6 +7,55 @@ import { C, F, STAGE, T } from '../theme';
 
 const ROWS = ['Awake', 'REM', 'Light', 'Deep'];
 
+/**
+ * The night as one bar from lights out to wake-up, coloured by stage. Deliberately simple:
+ * no axes, no rows, just the shape of the night and the two times that matter.
+ * Nights without stages (logged by hand, or devices that don't share them) show one asleep colour.
+ */
+export function SleepStrip({ session, height = 12, times = true, dark }: { session: SleepSession; height?: number; times?: boolean; dark?: boolean }) {
+  const start = Date.parse(session.start_time);
+  const end = Date.parse(session.end_time);
+  const span = Math.max(1, end - start);
+  // Merge neighbours with the same colour so the bar reads as a few calm blocks.
+  const blocks: { color: string; from: number; to: number }[] = [];
+  for (const iv of session.sleep_stage_intervals ?? []) {
+    const color = (STAGE[iv.stage] ?? STAGE.unknown).color;
+    const from = Math.max(0, (Date.parse(iv.start_time) - start) / span);
+    const to = Math.min(1, (Date.parse(iv.end_time) - start) / span);
+    const last = blocks[blocks.length - 1];
+    if (last && last.color === color && from - last.to < 0.002) last.to = to;
+    else if (to > from) blocks.push({ color, from, to });
+  }
+  // Fold slivers (under 2.5% of the night, about 12 minutes of 8 hours) into the block before them,
+  // then merge again, so a restless minute doesn't turn the bar into a barcode.
+  const calm: typeof blocks = [];
+  for (const b of blocks) {
+    const prev = calm[calm.length - 1];
+    if (prev && (b.to - b.from < 0.025 || prev.color === b.color)) prev.to = b.to;
+    else calm.push({ ...b });
+  }
+  if (calm.length > 1 && calm[0].to - calm[0].from < 0.025) {
+    calm[1].from = calm[0].from;
+    calm.shift();
+  }
+  const label = `Asleep from ${clock(session.start_time)} to ${clock(session.end_time)}`;
+  return (
+    <View accessibilityLabel={label} style={{ gap: 6 }}>
+      <View style={{ height, borderRadius: height / 2, overflow: 'hidden', backgroundColor: calm.length ? (dark ? C.onDarkLine : C.inset) : STAGE.light.color, flexDirection: 'row' }}>
+        {calm.map((b, i) => (
+          <View key={i} style={{ position: 'absolute', top: 0, bottom: 0, left: `${b.from * 100}%`, width: `${(b.to - b.from) * 100}%`, backgroundColor: b.color }} />
+        ))}
+      </View>
+      {times && (
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Text style={[T.caption, dark && { color: C.onDarkMuted }]}>{clock(session.start_time)}</Text>
+          <Text style={[T.caption, dark && { color: C.onDarkMuted }]}>{clock(session.end_time)}</Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
 export function Hypnogram({ session, compact, height: h }: { session: SleepSession; compact?: boolean; height?: number }) {
   const [w, setW] = useState(0);
   const onLayout = (e: LayoutChangeEvent) => setW(e.nativeEvent.layout.width);

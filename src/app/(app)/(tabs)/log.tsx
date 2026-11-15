@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { PaperScrap } from '../../../components/Collage';
 import { Mascot } from '../../../components/Mascot';
-import { Hypnogram, StageLegend } from '../../../components/Charts';
+import { SleepStrip } from '../../../components/Charts';
+import { AddPhotoButton, NightPhoto } from '../../../components/NightPhoto';
 import { Button, Card, Screen, Section, Segmented, Stat } from '../../../components/Ui';
 import { clock, hm } from '../../../data/format';
 import { PROVIDER_LABEL, manualSession } from '../../../data/generate';
@@ -11,6 +12,7 @@ import { asleepMinutes } from '../../../data/score';
 import { useStore } from '../../../data/store';
 import type { Night, SleepSession, Visibility } from '../../../data/types';
 import { api } from '../../../lib/auth';
+import { pickDayPhoto, uploadDayPhoto, type PickedPhoto } from '../../../lib/photo';
 import { C, F, R, S, T } from '../../../theme';
 
 function lastEvening(hour: number, minute: number) {
@@ -30,6 +32,8 @@ export default function LogScreen() {
   const [visibility, setVisibility] = useState<Visibility>('followers');
   const [bedMin, setBedMin] = useState(23 * 60 + 15);
   const [wakeMin, setWakeMin] = useState(7 * 60);
+  const [photo, setPhoto] = useState<PickedPhoto | null>(null);
+  const [picking, setPicking] = useState(false);
   const [busy, setBusy] = useState<'sync' | 'post' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const provider = state.connectedProviders[0];
@@ -76,13 +80,30 @@ export default function LogScreen() {
           session: draft,
         },
       });
+      // The night is saved first; a photo that fails to upload never loses the post.
+      let photoFailed = false;
+      if (photo) await uploadDayPhoto(night.id, photo).catch(() => (photoFailed = true));
       await refresh();
       setDraft(null);
-      router.push(`/night/${night.id}`);
+      setPhoto(null);
+      router.push(photoFailed ? `/night/${night.id}?photo=failed` : `/night/${night.id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not post this night.');
     } finally {
       setBusy(null);
+    }
+  };
+
+  const choosePhoto = async () => {
+    setPicking(true);
+    setError(null);
+    try {
+      const picked = await pickDayPhoto();
+      if (picked) setPhoto(picked);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not read that photo. Try another one.');
+    } finally {
+      setPicking(false);
     }
   };
 
@@ -184,17 +205,7 @@ export default function LogScreen() {
               <Stat label="Lights out" value={clock(draft.start_time)} />
               <Stat label="Woke up" value={clock(draft.end_time)} />
             </View>
-            <View
-              style={{
-                backgroundColor: C.inset,
-                borderRadius: 12,
-                padding: 12,
-                gap: 10,
-              }}
-            >
-              <Hypnogram session={draft} />
-              {draft.stages?.deep_minutes != null && <StageLegend />}
-            </View>
+            <SleepStrip session={draft} height={16} />
             <View style={{ gap: 6 }}>
               <Text style={T.smallStrong}>Title</Text>
               <TextInput
@@ -221,6 +232,20 @@ export default function LogScreen() {
               />
             </View>
             <View style={{ gap: 6 }}>
+              <Text style={T.smallStrong}>Photo of your day</Text>
+              {photo ? (
+                <View style={{ gap: S.sm }}>
+                  <NightPhoto photo={photo} uri={photo.preview} />
+                  <View style={{ flexDirection: 'row', gap: S.sm }}>
+                    <Button small kind="ghost" label="Change photo" onPress={choosePhoto} busy={picking} />
+                    <Button small kind="ghost" label="Remove photo" onPress={() => setPhoto(null)} />
+                  </View>
+                </View>
+              ) : (
+                <AddPhotoButton onPress={choosePhoto} busy={picking} />
+              )}
+            </View>
+            <View style={{ gap: 6 }}>
               <Text style={T.smallStrong}>Who can see it</Text>
               <Segmented<Visibility>
                 options={[
@@ -233,7 +258,15 @@ export default function LogScreen() {
             </View>
             {error && <Text style={[T.body, { color: C.wine }]}>{error}</Text>}
             <Button label="Post night" onPress={post} busy={busy === 'post'} full />
-            <Button kind="ghost" label="Discard" onPress={() => setDraft(null)} full />
+            <Button
+              kind="ghost"
+              label="Discard"
+              onPress={() => {
+                setDraft(null);
+                setPhoto(null);
+              }}
+              full
+            />
           </Card>
         </Section>
       )}

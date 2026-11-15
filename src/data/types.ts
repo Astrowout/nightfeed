@@ -87,6 +87,14 @@ export interface Night {
   comments: Comment[];
   /** Stored by the server when the night was saved. */
   score?: ScoreBreakdown;
+  /** Optional photo of the day; served from /api/photos/:id. */
+  photo?: NightPhotoRef;
+}
+
+export interface NightPhotoRef {
+  id: string;
+  width: number;
+  height: number;
 }
 
 export type ChallengeKind =

@@ -9,7 +9,8 @@ import { useStore } from '../data/store';
 import type { Night } from '../data/types';
 import { C, F, R, S, T, scoreTag } from '../theme';
 import { Avatar, AvatarStack } from './Avatar';
-import { Hypnogram } from './Charts';
+import { SleepStrip } from './Charts';
+import { NightPhoto } from './NightPhoto';
 import { CommentIcon, LockIcon, StarIcon, TrophyIcon } from './Icons';
 import { Stat, Tag } from './Ui';
 
@@ -69,9 +70,8 @@ export function NightCard({ night }: { night: Night }) {
           <Stat label="Lights out" value={clock(night.session.start_time)} />
         </View>
 
-        <View style={st.well}>
-          <Hypnogram session={night.session} compact />
-        </View>
+        <SleepStrip session={night.session} />
+        {night.photo && <NightPhoto photo={night.photo} />}
       </Pressable>
 
       <View style={st.footer}>
@@ -117,7 +117,6 @@ const st = StyleSheet.create({
   best: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: C.marigold, paddingHorizontal: 9, paddingVertical: 2, borderRadius: R.pill },
   stats: { flexDirection: 'row', alignItems: 'stretch', gap: S.md },
   vr: { width: 1, backgroundColor: C.line },
-  well: { backgroundColor: C.inset, borderRadius: 12, padding: 10 },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',

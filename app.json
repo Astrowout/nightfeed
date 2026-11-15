@@ -44,6 +44,14 @@
           "resizeMode": "contain",
           "backgroundColor": "#F2F0EB"
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Kudoze lets you add a photo of your day to a night you post.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
       ]
     ],
     "scheme": "kudoze",

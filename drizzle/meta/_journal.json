@@ -15,6 +15,13 @@
       "when": 1794760136180,
       "tag": "0001_waitlist",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794760439674,
+      "tag": "0002_night_photos",
+      "breakpoints": true
     }
   ]
 }

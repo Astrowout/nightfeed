@@ -5,7 +5,7 @@ import { buildSession, rng } from '../data/generate';
 import type { Sleeper } from '../data/types';
 import { C, F, FLOAT, R, S, T, scoreTag } from '../theme';
 import { Avatar, AvatarStack } from './Avatar';
-import { Hypnogram } from './Charts';
+import { SleepStrip } from './Charts';
 import { CommentIcon, StarIcon } from './Icons';
 import { Mascot } from './Mascot';
 import { Tag } from './Ui';
@@ -179,8 +179,8 @@ function Phone({ width, kudos, comments, narrow }: { width: number; kudos: numbe
             <MiniStat label="Lights out" value="23:12" k={k} />
             <MiniStat label="Score" value="86" k={k} />
           </View>
-          <View style={st.map}>
-            <Hypnogram session={session} compact height={74 * k} />
+          <View style={{ marginTop: 12 }}>
+            <SleepStrip session={session} height={10} />
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, gap: 8 }}>
             <AvatarStack people={[JONAS, SAM, MIRA]} size={20} />
@@ -240,7 +240,6 @@ const st = StyleSheet.create({
   batteryFill: { width: '80%', height: '100%', borderRadius: 1, backgroundColor: C.ink },
   appBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4, paddingVertical: 8 },
   post: { backgroundColor: C.paper, borderRadius: R.card, borderWidth: 1, borderColor: C.line },
-  map: { marginTop: 10, backgroundColor: C.inset, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 6 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   toast: {
     position: 'absolute',

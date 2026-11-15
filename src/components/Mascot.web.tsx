@@ -1,11 +1,11 @@
 import { BotAvatar } from 'bot-avatars';
 import React from 'react';
 import { View } from 'react-native';
-import { LOOKS, MASCOT_LOOK, NIGHTCAP, mascotLabel, type MascotProps } from './mascotConfig';
+import { LOOKS, MASCOT_LOOK, ACCESSORY, mascotLabel, type MascotProps } from './mascotConfig';
 
 /** Web: the animated plush avatar from bot-avatars, drawn on a canvas. */
 export function Mascot(props: MascotProps) {
-  const { size = 64, state = 'default', onDark, look = MASCOT_LOOK, interactive = true, smile, hat, glasses, headphones, bowTie, accessoryColor } = props;
+  const { size = 64, state = 'default', onDark, look = MASCOT_LOOK, interactive = true, smile, glasses, headphones, bowTie, accessoryColor } = props;
   const l = LOOKS[look];
   return (
     <View style={{ width: size, height: size }} pointerEvents={interactive ? 'auto' : 'none'}>
@@ -23,11 +23,11 @@ export function Mascot(props: MascotProps) {
         furLength={0.55}
         furFuzz={0.55}
         furCurl={0.35}
-        hat={hat ?? (state === 'sleeping' ? 'beanie' : 'none')}
+        hat="none"
         glasses={glasses ?? 'none'}
         headphones={headphones}
         bowTie={bowTie}
-        accessoryColor={accessoryColor ?? NIGHTCAP}
+        accessoryColor={accessoryColor ?? ACCESSORY}
         interactive={interactive}
         aria-label={mascotLabel(props)}
       />

@@ -32,6 +32,13 @@ export class ApiError extends Error {
   }
 }
 
+/** Headers that carry the session on the phone apps (web uses its cookie automatically). */
+export function authHeaders(): Record<string, string> | undefined {
+  if (Platform.OS === 'web') return undefined;
+  const cookie = (authClient as unknown as { getCookie: () => string }).getCookie();
+  return cookie ? { Cookie: cookie } : undefined;
+}
+
 /** Calls the Kudoze API with the signed-in session. */
 export async function api<T = unknown>(path: string, init: { method?: string; body?: unknown } = {}): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
