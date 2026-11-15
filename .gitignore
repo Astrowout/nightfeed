@@ -39,3 +39,9 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# secrets and deploy state
+.env
+.env.*
+!.env.example
+.vercel
