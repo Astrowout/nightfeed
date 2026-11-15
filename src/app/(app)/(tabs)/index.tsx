@@ -1,0 +1,106 @@
+import { router } from 'expo-router';
+import React, { useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
+import { Avatar } from '../../../components/Avatar';
+import { WeekBars } from '../../../components/Charts';
+import { MoonIcon } from '../../../components/Icons';
+import { NightCard } from '../../../components/NightCard';
+import { Button, Card, Screen, TopBar } from '../../../components/Ui';
+import { clock, hm, nightLabel } from '../../../data/format';
+import { asleepMinutes, scoreNight } from '../../../data/score';
+import { feed, lastNDays, nightsOf, periodStats, sleeper, streak } from '../../../data/selectors';
+import { useStore } from '../../../data/store';
+import { C, F, MAX_W, S, T, scoreTag } from '../../../theme';
+
+function NightBand() {
+  const { state } = useStore();
+  const last = nightsOf(state, state.meId).find((n) => !n.session.is_nap);
+  const lastIsRecent = last && Date.now() - Date.parse(last.session.end_time) < 30 * 3600000;
+  const week = periodStats(state, state.meId, 7);
+  const run = streak(state, state.meId);
+
+  return (
+    <View style={{ backgroundColor: C.lagoon }}>
+      <View style={{ width: '100%', maxWidth: MAX_W, alignSelf: 'center', paddingHorizontal: S.lg, paddingTop: S.xl, paddingBottom: S.xl + 4, gap: S.lg }}>
+        {lastIsRecent && last ? (
+          <Pressable onPress={() => router.push(`/night/${last.id}`)} accessibilityRole="link" style={{ gap: 6 }}>
+            <Text style={[T.eyebrow, { color: C.onDarkMuted }]}>{nightLabel(last.session.end_time)}</Text>
+            <Text style={[T.display, { color: C.onDark, fontSize: 48, lineHeight: 52 }]}>{hm(asleepMinutes(last.session))}</Text>
+            <Text style={[T.body, { color: C.onDarkMuted }]}>
+              Score {scoreNight(last, state.nights).total} · {scoreTag(scoreNight(last, state.nights).total).label} · lights out {clock(last.session.start_time)}
+            </Text>
+          </Pressable>
+        ) : (
+          <View style={{ gap: S.md, alignItems: 'flex-start' }}>
+            <Text style={[T.eyebrow, { color: C.onDarkMuted }]}>Last night</Text>
+            <Text style={[T.h1, { color: C.onDark }]}>Nothing posted yet.</Text>
+            <Button kind="onDark" small label="Log last night" onPress={() => router.push('/log')} />
+          </View>
+        )}
+        <View style={{ flexDirection: 'row', gap: S.xl, alignItems: 'flex-end' }}>
+          <View style={{ flex: 1 }}>
+            <WeekBars data={lastNDays(state, state.meId, 7)} dark />
+          </View>
+          <View style={{ gap: 10, minWidth: 96 }}>
+            <View>
+              <Text style={[T.eyebrow, { color: C.onDarkMuted }]}>7-night avg</Text>
+              <Text style={[T.stat, { color: C.onDark }]}>{week.nights ? hm(week.avgAsleep) : '–'}</Text>
+            </View>
+            <View>
+              <Text style={[T.eyebrow, { color: C.onDarkMuted }]}>Streak 70+</Text>
+              <Text style={[T.stat, { color: C.onDark }]}>
+                {run} {run === 1 ? 'night' : 'nights'}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+export default function FeedScreen() {
+  const { state, error } = useStore();
+  const [limit, setLimit] = useState(15);
+  const items = feed(state);
+  const me = sleeper(state, state.meId);
+
+  const header = (
+    <TopBar
+      left={
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: 4 }}>
+          <MoonIcon size={20} color={C.wine} filled />
+          <Text style={{ fontFamily: F.serif, fontSize: 24, letterSpacing: -0.6, color: C.ink }}>nightfeed</Text>
+        </View>
+      }
+      right={
+        <Pressable onPress={() => router.push('/you')} accessibilityRole="link" accessibilityLabel="Your profile" style={{ paddingRight: 4 }}>
+          <Avatar sleeper={me} size={32} />
+        </Pressable>
+      }
+    />
+  );
+
+  return (
+    <Screen header={header} band={<NightBand />}>
+      {error && (
+        <Card style={{ marginTop: S.lg, backgroundColor: C.marigold, borderColor: C.marigold }}>
+          <Text style={T.body}>{error}</Text>
+        </Card>
+      )}
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginTop: S.xl, marginBottom: S.lg }}>
+        <Text style={T.h1}>Following</Text>
+        <Text style={T.small}>{state.following.length} sleepers</Text>
+      </View>
+      {items.length === 0 && (
+        <Card>
+          <Text style={T.body}>Nothing here yet. Log a night or follow someone to fill your feed.</Text>
+        </Card>
+      )}
+      {items.slice(0, limit).map((n) => (
+        <NightCard key={n.id} night={n} />
+      ))}
+      {items.length > limit && <Button kind="ghost" label="Show older nights" onPress={() => setLimit(limit + 15)} />}
+    </Screen>
+  );
+}

@@ -1,40 +1,61 @@
 # Nightfeed
 
-A social feed for sleep: post your nights, give kudos, comment, follow people and join consistency challenges. One Expo (React Native) codebase runs as a web app and as native iOS and Android apps.
-
-Everything runs on generated demo data. Every person in the demo is made up.
+A social feed for sleep: post your nights, give kudos, comment, follow people and join bedtime challenges. One Expo (React Native) codebase runs as a web app and as native iOS and Android apps. The API runs on Vercel next to the web app.
 
 ## Run it
 
 ```bash
 npm install
-npm run web        # browser
-npm run ios        # iOS simulator (needs a Mac) or Expo Go
-npm run android    # Android emulator or Expo Go
+npm run build:web && npm run local   # web app + API + in-memory database on http://localhost:8787
+npm run test:api                     # end-to-end API checks against an in-memory Postgres
 npm run typecheck
-npm run build:web  # static web build in dist/
+npm run ios | android                # native apps (set EXPO_PUBLIC_API_URL to your deployed URL)
 ```
 
-For store builds use EAS (`npx eas-cli@latest build -p ios|android`). Bundle ids in `app.json` are placeholders (`com.example.nightfeed`): change them first.
+## Stack
 
-## How it is built
+| Layer | Choice |
+| --- | --- |
+| App | Expo SDK 58, React Native 0.88, Expo Router, react-native-svg, Inter + Lora |
+| API | One Vercel Function (`api/index.ts`) running Hono, code in `server/` |
+| Database | Postgres on Neon (Vercel Marketplace), Drizzle ORM, migrations in `drizzle/` |
+| Accounts | Better Auth (email + password), Expo plugin for the phone apps |
+| Wearables | Open Wearables (self-hosted, not on Vercel); demo data until it runs |
 
-- **Expo SDK 58 + Expo Router**, routes in `src/app/`. Tabs: Feed, Log night, Challenges, You. Stack screens: `night/[id]`, `sleeper/[id]`.
-- **react-native-svg** for the hypnogram, score ring and icons, so charts render the same on all three platforms.
-- **State** in a React context (`src/data/store.tsx`), saved with AsyncStorage (localStorage on web).
+## Deploy on Vercel
 
-### Data
+1. Add **Neon** from the Vercel Marketplace to the project (EU region). It sets `DATABASE_URL`.
+2. Add environment variables in Vercel, never in the repo:
+   - `BETTER_AUTH_SECRET`: a random value, e.g. `openssl rand -base64 32`
+   - `CRON_SECRET`: another random value (Vercel sends it to the daily cron)
+   - `BETTER_AUTH_URL`: optional, your production URL (defaults to the Vercel production domain)
+3. Push to `main`. The build runs migrations, seeds the demo people once, and exports the web app.
 
-- `src/data/types.ts` mirrors the Open Wearables `SleepSession` schema (`GET /api/v1/users/{user_id}/events/sleep`), so demo nights and real nights go through the same code.
-- `src/data/generate.ts` makes realistic nights: ~90 minute cycles, more deep sleep early, more REM late, a few wake-ups. Whoop and Suunto nights come without stages, like the real providers.
-- `src/data/openWearables.ts` is a working client for that endpoint (cursor pagination, `X-Open-Wearables-API-Key` header). Switch it on under **You → Data source**.
+### Open Wearables (later)
 
-### Score
+Open Wearables needs always-on workers (Celery, Redis), so it runs on a Docker host, not on Vercel. When it runs, set `OW_BASE_URL`, `OW_API_KEY` and `OW_WEBHOOK_SECRET` in Vercel and point its outgoing webhook to `https://<your-domain>/api/webhooks/open-wearables` (events `sleep.created`, `connection.created`, `connection.revoked`). The backend then leaves demo mode: new users get an Open Wearables user, devices connect through its OAuth links, and nights arrive by webhook, with a daily cron as safety net.
 
-`src/data/score.ts` computes one score for every brand from normalised minutes: duration 40%, stages 20%, consistency (bedtime vs your 14-night median) 20%, interruptions 20%. When a device has no stages, that pillar is left out and the other weights are rescaled. The night screen shows the breakdown.
+## API
 
-## Before real users
+All routes are under `/api`; everything except auth, webhooks and cron needs a session.
 
-- **Backend.** Social data (follows, kudos, comments, challenges) is local only. A real launch needs accounts and a database, plus your own server between the app and Open Wearables. Never put an Open Wearables API key in a shipped app.
-- **Phone health data.** Apple Health and Health Connect data comes from the phone through the Open Wearables mobile SDK, which needs a development build, not Expo Go.
-- **Privacy.** Sleep data is health data under GDPR. Nights are followers-only by default and can be set to "Only me". Explicit consent, data export and deletion are still to be built.
+| Route | What it does |
+| --- | --- |
+| `/auth/*` | Better Auth: sign-up (requires `healthConsent: true`), sign-in, sign-out, session |
+| `GET /state` | Everything the app shows: you, the people you follow, their nights from the last 35 days, challenges with leaderboards |
+| `POST /nights`, `GET/PATCH/DELETE /nights/:id` | Post, read, change visibility, delete a night (score computed on the server) |
+| `POST/DELETE /nights/:id/kudos`, `POST /nights/:id/comments` | Social |
+| `POST/DELETE /follows/:id`, `POST/DELETE /challenges/:id/join` | Follow, join |
+| `POST /sync` | Last night as a draft (demo, or from Open Wearables) |
+| `POST /connect/:provider`, `POST /connect/sdk-token` | Link a device / tokens for the phone SDK |
+| `GET /me/export`, `DELETE /me` | Download or delete all your data |
+| `POST /webhooks/open-wearables` | Svix-signed Open Wearables events, deduplicated |
+| `GET /cron/daily` | New challenge rounds, demo nights, missed-webhook catch-up |
+
+## Design
+
+The look merges two references: Superhuman (warm parchment canvas, white hairline cards, Midnight Wine as the only filled action, Lilac for selected states, Violet for links, Deep Lagoon as the single dark "night" band) and Craft Docs (Lora serif headlines over Inter, pastel stage colours and tags, torn-paper collage scraps, pill buttons, soft layered shadows on floating elements only). Tokens live in `src/theme.ts`.
+
+## Privacy
+
+Sleep data is health data under GDPR. Sign-up needs explicit consent, nights are followers-only by default and can be set to "Only me", and every user can download or delete their data from the profile. All other people in demo mode are invented.

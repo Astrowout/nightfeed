@@ -32,7 +32,10 @@
           "asyncRoutes": false
         }
       ],
-      "expo-status-bar"
+      "expo-status-bar",
+      "expo-secure-store",
+      "expo-font",
+      "expo-web-browser"
     ],
     "scheme": "nightfeed",
     "backgroundColor": "#0B1020"

@@ -2,7 +2,13 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "npm install",
-  "buildCommand": "npx expo export -p web",
+  "buildCommand": "npm run db:migrate && npx expo export -p web",
+  "devCommand": "npx expo start --web --port $PORT",
   "outputDirectory": "dist",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "regions": ["fra1"],
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "crons": [{ "path": "/api/cron/daily", "schedule": "0 6 * * *" }]
 }

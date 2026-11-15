@@ -1,4 +1,4 @@
-import type { ProviderName, SleepSession, SleepStage, SleepStageType } from './types';
+import type { ProviderName, SleepSession, SleepStage, SleepStageType } from './types.js';
 
 // Deterministic fake sleep in the Open Wearables SleepSession shape.
 

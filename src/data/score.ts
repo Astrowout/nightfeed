@@ -1,4 +1,4 @@
-import type { Night, SleepSession } from './types';
+import type { Night, SleepSession } from './types.js';
 
 // Our own score, computed from normalised minutes only, so every brand is
 // scored the same way. Weights follow four pillars:
@@ -90,6 +90,7 @@ export function scoreSession(s: SleepSession, previous: SleepSession[]): ScoreBr
 
 /** Score a night against the same sleeper's 14 main sleeps before it. */
 export function scoreNight(night: Night, all: Night[]): ScoreBreakdown {
+  if (night.score) return night.score;
   const prev = all
     .filter(
       (n) =>

@@ -1,3 +1,5 @@
+import type { ScoreBreakdown } from './score.js';
+
 // Sleep data mirrors the Open Wearables SleepSession schema
 // (GET /api/v1/users/{user_id}/events/sleep), so demo data and real data
 // flow through the same code. Social fields live next to it, not inside it.
@@ -83,6 +85,8 @@ export interface Night {
   session: SleepSession;
   kudos: string[]; // sleeper ids
   comments: Comment[];
+  /** Stored by the server when the night was saved. */
+  score?: ScoreBreakdown;
 }
 
 export type ChallengeKind =
@@ -99,22 +103,19 @@ export interface Challenge {
   startDate: string; // ISO date
   endDate: string;
   participants: string[];
-}
-
-export interface DataSourceSettings {
-  mode: 'demo' | 'open_wearables';
-  baseUrl: string;
-  apiKey: string;
-  userId: string;
+  /** Progress per participant, computed by the server. */
+  board?: { userId: string; value: number }[];
 }
 
 export interface AppState {
   version: number;
   meId: string;
+  me?: { email: string; healthConsentAt: string | null; owLinked: boolean };
   sleepers: Sleeper[];
   following: string[];
   nights: Night[];
   challenges: Challenge[];
   connectedProviders: ProviderName[];
-  dataSource: DataSourceSettings;
+  /** "demo" until an Open Wearables server is configured on the backend. */
+  mode: 'demo' | 'open_wearables';
 }

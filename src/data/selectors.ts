@@ -1,5 +1,5 @@
-import { asleepMinutes, bedtimeMinutes, scoreNight } from './score';
-import type { AppState, Challenge, Night } from './types';
+import { asleepMinutes, bedtimeMinutes, scoreNight } from './score.js';
+import type { AppState, Challenge, Night } from './types.js';
 
 export const byNewest = (a: Night, b: Night) => (a.session.end_time < b.session.end_time ? 1 : -1);
 
