@@ -162,6 +162,13 @@ export const webhookEvents = pgTable('webhook_events', {
   receivedAt: timestamp('received_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+/** People who left their email on the landing page to hear when Kudoze opens. */
+export const waitlist = pgTable('waitlist', {
+  email: text('email').primaryKey(), // stored lowercased, so one row per address
+  source: text('source').notNull().default('landing'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const schema = {
   user,
   session,
@@ -174,4 +181,5 @@ export const schema = {
   challenges,
   challengeParticipants,
   webhookEvents,
+  waitlist,
 };

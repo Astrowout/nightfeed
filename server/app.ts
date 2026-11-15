@@ -9,7 +9,7 @@ import { addDemoLastNights, demoDraft, ensureChallenges } from './demo.js';
 import { isDemoMode, type Env } from './env.js';
 import { insertNight, validSession } from './nights.js';
 import { OpenWearables } from './ow.js';
-import { challengeParticipants, comments, follows, kudos, nights, user, webhookEvents } from './schema.js';
+import { challengeParticipants, comments, follows, kudos, nights, user, waitlist, webhookEvents } from './schema.js';
 import { attachSocial, buildState, canSee, followingOf } from './state.js';
 
 type Vars = { userId: string };
@@ -102,6 +102,27 @@ export function createApp(db: DB, env: Env) {
       owSessionId: session.id,
     });
   }
+
+  // ---- Waitlist (public): emails from the landing page while Kudoze is not open yet ----
+  const WaitlistBody = z.object({
+    email: z.string().trim().toLowerCase().max(254).email(),
+    source: z.string().max(40).optional(),
+  });
+  app.post('/waitlist', async (c) => {
+    const parsed = WaitlistBody.safeParse(await c.req.json().catch(() => null));
+    if (!parsed.success) return c.json({ error: 'Enter a valid email address, like name@example.com.' }, 400);
+    const { email, source } = parsed.data;
+    // Same answer for new and repeated emails, so the form never reveals who is on the list.
+    await db.insert(waitlist).values({ email, source: source ?? 'landing' }).onConflictDoNothing();
+    return c.json({ ok: true });
+  });
+
+  /** The list itself, for the team only (Bearer CRON_SECRET). */
+  app.get('/waitlist', async (c) => {
+    if (!env.CRON_SECRET || c.req.header('authorization') !== `Bearer ${env.CRON_SECRET}`) return c.json({ error: 'Unauthorized' }, 401);
+    const rows = await db.select().from(waitlist).orderBy(desc(waitlist.createdAt));
+    return c.json({ count: rows.length, entries: rows });
+  });
 
   // ---- Daily cron (Vercel Cron, Bearer CRON_SECRET) ----
   app.get('/cron/daily', async (c) => {

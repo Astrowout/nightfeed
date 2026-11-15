@@ -1,23 +1,23 @@
 import { router } from 'expo-router';
 import Head from 'expo-router/head';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Platform, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { BRANDS, BrandMark, BrandWall } from '../components/BrandLogos';
 import { HeroStage } from '../components/HeroStage';
 import { Mascot } from '../components/Mascot';
 import type { MascotProps } from '../components/mascotConfig';
 import { MascotSays } from '../components/MascotSays';
-import { Button, TextLink } from '../components/Ui';
+import { Button, Tag } from '../components/Ui';
+import { ApiError, api } from '../lib/auth';
 import { C, F, R, S, T } from '../theme';
 
 // Public landing page. Only signed-out visitors on the web reach it (see app/_layout.tsx);
-// the phone apps open straight at sign-in.
+// the phone apps open straight at sign-in. Kudoze is not open yet, so the page collects
+// emails for a waitlist (POST /api/waitlist) instead of sending people to sign up.
 
 const PAGE_W = 1120;
 const WIDE = 900;
 
-const signUp = (email = '') =>
-  router.push(email.trim() ? `/sign-in?mode=sign-up&email=${encodeURIComponent(email.trim())}` : '/sign-in?mode=sign-up');
 const HERO_BRANDS = BRANDS.filter((b) => ['Apple Watch', 'Garmin', 'Oura', 'Whoop'].includes(b.name));
 const logIn = () => router.push('/sign-in?mode=sign-in');
 
@@ -25,33 +25,40 @@ export default function Landing() {
   const { width } = useWindowDimensions();
   const wide = width >= WIDE;
   const [artW, setArtW] = useState(0);
+  const [joined, setJoined] = useState<string | null>(null);
+  const scroll = useRef<React.ComponentRef<typeof ScrollView>>(null);
+  const heroInput = useRef<React.ComponentRef<typeof TextInput>>(null);
+  const toForm = () => {
+    scroll.current?.scrollTo({ y: 0, animated: true });
+    setTimeout(() => heroInput.current?.focus(), 300);
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: C.canvas }}>
       <Head>
-        <title>Kudoze: the social feed for sleep</title>
+        <title>Kudoze: the social feed for sleep, coming soon</title>
         <meta
           name="description"
-          content="Post last night from your watch or ring, give friends kudos for a good night and keep each other to a bedtime."
+          content="Kudoze is coming soon: post last night from your watch or ring, give friends kudos for a good night and keep each other to a bedtime. Leave your email to hear when it opens."
         />
       </Head>
 
-      <Nav />
+      <Nav onKeepPosted={toForm} joined={!!joined} />
 
-      <ScrollView>
+      <ScrollView ref={scroll}>
         {/* Hero */}
         <View style={[st.wrap, st.hero, wide && st.heroWide]}>
           <View style={[{ gap: S.lg }, wide && { flex: 1, paddingRight: 56 }]}>
+            <View style={st.soon}>
+              <View style={st.soonDot} />
+              <Text style={[T.smallStrong, { color: C.ink }]}>Coming soon to iPhone, Android and the web</Text>
+            </View>
             <Text style={[st.headline, wide ? { fontSize: 72, lineHeight: 74 } : { fontSize: 46, lineHeight: 50 }]}>Sleep is a team sport now.</Text>
             <Text style={st.lede}>
               Kudoze is the social feed for sleep. Your watch or ring posts last night, friends give kudos, and a bedtime leaderboard keeps
-              everyone honest.
+              everyone honest. Interested? Leave your email and you’ll hear first when it opens.
             </Text>
-            <EmailJoin />
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 6 }}>
-              <Text style={T.small}>Free, and your nights are followers-only.</Text>
-              <TextLink label="Already in? Log in" onPress={logIn} />
-            </View>
+            <EmailJoin joined={joined} onJoined={setJoined} inputRef={heroInput} source="hero" />
             <View style={st.syncs}>
               <Text style={T.small}>Syncs with</Text>
               {HERO_BRANDS.map((b) => (
@@ -60,6 +67,7 @@ export default function Landing() {
                 </View>
               ))}
               <Text style={T.small}>and 7 more</Text>
+              <Tag label="Coming soon" bg={C.lilac} />
             </View>
           </View>
 
@@ -76,10 +84,10 @@ export default function Landing() {
           <View style={st.wrap}>
             <View style={{ alignItems: 'center', marginBottom: S.xl }}>
               <MascotSays size={76} mascot={{ headphones: true }}>
-                I listen to your watch, ring or phone. You just sleep.
+                Soon I’ll listen to your watch, ring or phone. You just sleep.
               </MascotSays>
             </View>
-            <Text style={[T.eyebrow, { textAlign: 'center', marginBottom: S.xl }]}>Works with what you already wear</Text>
+            <Text style={[T.eyebrow, { textAlign: 'center', marginBottom: S.xl }]}>Coming soon for what you already wear</Text>
             <BrandWall />
           </View>
         </View>
@@ -136,13 +144,13 @@ export default function Landing() {
           <Mascot size={150} state="sleeping" />
           <Text style={[T.caption, { marginTop: S.sm, fontFamily: F.serifItalic, fontSize: 15 }]}>Plume is already in bed. Zzz…</Text>
           <Text style={[T.h1, { textAlign: 'center', marginTop: S.lg }, wide && { fontSize: 48, lineHeight: 52, letterSpacing: -1.5 }]}>
-            Tonight is a good night to start.
+            Be first in when Kudoze opens.
           </Text>
           <Text style={[T.body, { color: C.muted, textAlign: 'center', marginTop: S.md, maxWidth: 420 }]}>
-            Connect your device, follow a few friends and see who sleeps best this week.
+            Interested? Leave your email and we’ll let you know the day it opens. Bring a friend who stays up too late.
           </Text>
           <View style={{ marginTop: S.xl, width: '100%', maxWidth: 460 }}>
-            <EmailJoin />
+            <EmailJoin joined={joined} onJoined={setJoined} source="closing" />
           </View>
         </View>
 
@@ -152,7 +160,7 @@ export default function Landing() {
   );
 }
 
-function Nav() {
+function Nav({ onKeepPosted, joined }: { onKeepPosted: () => void; joined: boolean }) {
   return (
     <View style={st.nav}>
       <View style={[st.wrap, st.navInner]}>
@@ -162,38 +170,91 @@ function Nav() {
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: S.sm }}>
           <Button label="Log in" kind="ghost" small onPress={logIn} />
-          <Button label="Sign up" small onPress={() => signUp()} />
+          {!joined && <Button label="Keep me posted" small onPress={onKeepPosted} />}
         </View>
       </View>
     </View>
   );
 }
 
-/** Email first, like the big fitness apps: one field and one button, the rest happens on the next screen. */
-function EmailJoin() {
+/** The waitlist form: one field and one button. After a successful submit it thanks the person instead. */
+function EmailJoin({
+  joined,
+  onJoined,
+  inputRef,
+  source,
+}: {
+  joined: string | null;
+  onJoined: (email: string) => void;
+  inputRef?: React.Ref<React.ComponentRef<typeof TextInput>>;
+  source: string;
+}) {
   const [email, setEmail] = useState('');
   const [focused, setFocused] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { width } = useWindowDimensions();
   const stacked = width < 520;
+
+  const submit = async () => {
+    const value = email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return setError('Enter a valid email address, like name@example.com.');
+    setError(null);
+    setBusy(true);
+    try {
+      await api('/waitlist', { method: 'POST', body: { email: value, source } });
+      onJoined(value);
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : 'We couldn’t save your email. Check your connection and try again.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (joined) {
+    return (
+      <View style={[st.joined, { marginTop: S.sm }]} accessibilityLiveRegion="polite">
+        <Mascot size={56} smile interactive={false} />
+        <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
+          <Text style={T.bodyStrong}>You’re on the list.</Text>
+          <Text style={T.small}>We’ll email {joined} when Kudoze opens. That’s the only email you’ll get from us.</Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
-    <View style={[st.join, stacked && st.joinStacked, focused && { borderColor: C.ink }]}>
-      <TextInput
-        value={email}
-        onChangeText={setEmail}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        onSubmitEditing={() => signUp(email)}
-        placeholder="Your email"
-        placeholderTextColor={C.faint}
-        autoCapitalize="none"
-        autoComplete="email"
-        keyboardType="email-address"
-        textContentType="emailAddress"
-        returnKeyType="go"
-        accessibilityLabel="Your email"
-        style={[st.joinInput, stacked && { paddingVertical: 12 }, Platform.OS === 'web' && ({ outlineStyle: 'none' } as object)]}
-      />
-      <Button label="Join for free" onPress={() => signUp(email)} full={stacked} />
+    <View style={{ gap: S.sm, marginTop: S.sm, maxWidth: 460, width: '100%' }}>
+      <View style={[st.join, stacked && st.joinStacked, focused && { borderColor: C.ink }, !!error && { borderColor: C.papaya }]}>
+        <TextInput
+          ref={inputRef}
+          value={email}
+          onChangeText={(t) => {
+            setEmail(t);
+            if (error) setError(null);
+          }}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          onSubmitEditing={submit}
+          placeholder="Your email"
+          placeholderTextColor={C.faint}
+          autoCapitalize="none"
+          autoComplete="email"
+          keyboardType="email-address"
+          textContentType="emailAddress"
+          returnKeyType="send"
+          accessibilityLabel="Your email"
+          style={[st.joinInput, stacked && { paddingVertical: 12 }, Platform.OS === 'web' && ({ outlineStyle: 'none' } as object)]}
+        />
+        <Button label="Keep me posted" onPress={submit} busy={busy} full={stacked} />
+      </View>
+      {error ? (
+        <Text style={[T.small, { color: C.ink }]} accessibilityLiveRegion="polite">
+          {error}
+        </Text>
+      ) : (
+        <Text style={T.small}>One email when we open. Nothing else.</Text>
+      )}
     </View>
   );
 }
@@ -227,7 +288,7 @@ function Footer() {
           <Mascot size={28} interactive={false} />
           <Text style={T.small}>© {new Date().getFullYear()} Kudoze</Text>
         </View>
-        <Text style={T.small}>Demo mode: the people you meet inside are made up.</Text>
+        <Text style={T.small}>Coming soon to iPhone, Android and the web.</Text>
       </View>
     </View>
   );
@@ -247,6 +308,31 @@ const st = StyleSheet.create({
   heroWide: { flexDirection: 'row', alignItems: 'center', paddingTop: 72, paddingBottom: 104 },
   headline: { fontFamily: F.serif, color: C.ink, letterSpacing: -2 },
   lede: { ...T.body, fontSize: 18, lineHeight: 27, color: C.muted, maxWidth: 500 },
+  soon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    alignSelf: 'flex-start',
+    backgroundColor: C.paper,
+    borderWidth: 1,
+    borderColor: C.line,
+    borderRadius: R.pill,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  soonDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: C.mint, borderWidth: 1, borderColor: '#6CC384' },
+  joined: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: S.md,
+    backgroundColor: C.paper,
+    borderWidth: 1,
+    borderColor: C.line,
+    borderRadius: R.card,
+    padding: S.md,
+    maxWidth: 460,
+    width: '100%',
+  },
   join: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -257,8 +343,6 @@ const st = StyleSheet.create({
     borderRadius: R.pill,
     padding: 5,
     paddingLeft: 20,
-    maxWidth: 460,
-    marginTop: S.sm,
   },
   joinStacked: { flexDirection: 'column', alignItems: 'stretch', borderRadius: R.card + 4, padding: 6, paddingLeft: 6 },
   joinInput: { flex: 1, minWidth: 0, fontFamily: F.sans, fontSize: 16, color: C.ink, paddingVertical: 8, paddingHorizontal: 8 },

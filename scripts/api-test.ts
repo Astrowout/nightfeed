@@ -109,5 +109,14 @@ const left = (await db.select().from(schema.nights)).filter((n) => n.userId === 
 assert.equal(left.length, 0);
 ok('deleting the account removes its nights');
 
+assert.equal((await call('POST', '/api/waitlist', { email: 'not-an-email' })).status, 400);
+assert.equal((await call('POST', '/api/waitlist', { email: ' Lotte@Example.test ' })).status, 200);
+assert.equal((await call('POST', '/api/waitlist', { email: 'lotte@example.test' })).status, 200);
+assert.equal((await call('GET', '/api/waitlist')).status, 401);
+const list = await call('GET', '/api/waitlist', undefined, { Authorization: 'Bearer cron' });
+assert.equal(list.json.count, 1);
+assert.equal(list.json.entries[0].email, 'lotte@example.test');
+ok('waitlist saves each email once and only the team can read it');
+
 console.log('\nAll API checks passed.');
 process.exit(0);
