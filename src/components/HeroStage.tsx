@@ -156,7 +156,7 @@ function Phone({ width, kudos, comments, narrow }: { width: number; kudos: numbe
           </View>
         </View>
         <View style={st.appBar}>
-          <Text style={{ fontFamily: F.serif, fontSize: 19 * k, color: C.ink, letterSpacing: -0.5 }}>kudoze</Text>
+          <Text style={{ fontFamily: F.logo, fontSize: 18 * k, color: C.ink, letterSpacing: -0.4 }}>kudoze</Text>
           <Avatar sleeper={YOU} size={24} />
         </View>
 

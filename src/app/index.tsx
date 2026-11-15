@@ -7,6 +7,7 @@ import { HeroStage } from '../components/HeroStage';
 import { Mascot } from '../components/Mascot';
 import type { MascotProps } from '../components/mascotConfig';
 import { MascotSays } from '../components/MascotSays';
+import { Wordmark } from '../components/Wordmark';
 import { Button, Tag } from '../components/Ui';
 import { ApiError, api } from '../lib/auth';
 import { C, F, R, S, T } from '../theme';
@@ -43,7 +44,7 @@ export default function Landing() {
         />
       </Head>
 
-      <Nav onKeepPosted={toForm} joined={!!joined} />
+      <Nav onKeepPosted={toForm} onHome={() => scroll.current?.scrollTo({ y: 0, animated: true })} joined={!!joined} />
 
       <ScrollView ref={scroll}>
         {/* Hero */}
@@ -160,14 +161,11 @@ export default function Landing() {
   );
 }
 
-function Nav({ onKeepPosted, joined }: { onKeepPosted: () => void; joined: boolean }) {
+function Nav({ onKeepPosted, onHome, joined }: { onKeepPosted: () => void; onHome: () => void; joined: boolean }) {
   return (
     <View style={st.nav}>
       <View style={[st.wrap, st.navInner]}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Mascot size={36} />
-          <Text style={{ fontFamily: F.serif, fontSize: 22, color: C.ink, letterSpacing: -0.4 }}>kudoze</Text>
-        </View>
+        <Wordmark size={24} mascot={36} onPress={onHome} />
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: S.sm }}>
           <Button label="Log in" kind="ghost" small onPress={logIn} />
           {!joined && <Button label="Keep me posted" small onPress={onKeepPosted} />}

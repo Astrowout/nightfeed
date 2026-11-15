@@ -1,7 +1,8 @@
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Wordmark } from '../components/Wordmark';
 import { MascotSays } from '../components/MascotSays';
 import { Button, Field, Segmented } from '../components/Ui';
 import { authClient } from '../lib/auth';
@@ -39,8 +40,8 @@ export default function SignInScreen() {
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: C.canvas }}>
       <ScrollView contentContainerStyle={[st.page, { paddingTop: insets.top + 32, paddingBottom: insets.bottom + 40 }]} keyboardShouldPersistTaps="handled">
         <View style={st.hero}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Text style={[T.title, { fontFamily: F.serif, fontSize: 22 }]}>kudoze</Text>
+          <View style={{ flexDirection: 'row' }}>
+            <Wordmark size={24} mascot={32} onPress={Platform.OS === 'web' ? () => router.replace('/') : undefined} />
           </View>
           <MascotSays size={96} mascot={{ smile: true, bowTie: true }} style={{ marginTop: S.xl }}>
             Hi, I’m Plume. Let’s get you to bed.

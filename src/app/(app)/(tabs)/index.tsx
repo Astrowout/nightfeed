@@ -5,13 +5,14 @@ import { Avatar } from '../../../components/Avatar';
 import { WeekBars } from '../../../components/Charts';
 import { Mascot } from '../../../components/Mascot';
 import { MascotSays } from '../../../components/MascotSays';
+import { Wordmark } from '../../../components/Wordmark';
 import { NightCard } from '../../../components/NightCard';
 import { Button, Card, Screen, TopBar } from '../../../components/Ui';
 import { clock, hm, nightLabel } from '../../../data/format';
 import { asleepMinutes, scoreNight } from '../../../data/score';
 import { feed, lastNDays, nightsOf, periodStats, sleeper, streak } from '../../../data/selectors';
 import { useStore } from '../../../data/store';
-import { C, F, MAX_W, S, T, scoreTag } from '../../../theme';
+import { C, MAX_W, S, T, scoreTag } from '../../../theme';
 
 function NightBand() {
   const { state } = useStore();
@@ -87,25 +88,8 @@ export default function FeedScreen() {
   const header = (
     <TopBar
       left={
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8,
-            paddingLeft: 4,
-          }}
-        >
-          <Mascot size={30} />
-          <Text
-            style={{
-              fontFamily: F.serif,
-              fontSize: 24,
-              letterSpacing: -0.6,
-              color: C.ink,
-            }}
-          >
-            kudoze
-          </Text>
+        <View style={{ paddingLeft: 4 }}>
+          <Wordmark size={23} mascot={30} onPress={() => router.navigate('/')} label="Kudoze feed" />
         </View>
       }
       right={

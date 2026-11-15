@@ -1,4 +1,5 @@
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
+import { Fraunces_900Black_Italic } from '@expo-google-fonts/fraunces';
 import { Lora_400Regular, Lora_400Regular_Italic } from '@expo-google-fonts/lora';
 import { useFonts } from 'expo-font';
 import { Stack, usePathname } from 'expo-router';
@@ -40,6 +41,7 @@ export default function RootLayout() {
     Inter_700Bold,
     Lora_400Regular,
     Lora_400Regular_Italic,
+    Fraunces_900Black_Italic,
   });
   const { data: session, isPending } = authClient.useSession();
   const pathname = usePathname();
