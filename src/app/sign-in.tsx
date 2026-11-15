@@ -11,10 +11,10 @@ type Mode = 'sign-in' | 'sign-up';
 
 export default function SignInScreen() {
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<{ mode?: string }>();
+  const params = useLocalSearchParams<{ mode?: string; email?: string }>();
   const [mode, setMode] = useState<Mode>(params.mode === 'sign-in' ? 'sign-in' : 'sign-up');
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(typeof params.email === 'string' ? params.email : '');
   const [password, setPassword] = useState('');
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);

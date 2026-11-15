@@ -7,10 +7,10 @@ import { C, F, STAGE, T } from '../theme';
 
 const ROWS = ['Awake', 'REM', 'Light', 'Deep'];
 
-export function Hypnogram({ session, compact }: { session: SleepSession; compact?: boolean }) {
+export function Hypnogram({ session, compact, height: h }: { session: SleepSession; compact?: boolean; height?: number }) {
   const [w, setW] = useState(0);
   const onLayout = (e: LayoutChangeEvent) => setW(e.nativeEvent.layout.width);
-  const height = compact ? 52 : 156;
+  const height = h ?? (compact ? 52 : 156);
   const labelW = compact ? 0 : 48;
   const start = Date.parse(session.start_time);
   const end = Date.parse(session.end_time);

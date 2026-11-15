@@ -1,17 +1,14 @@
 import { router } from 'expo-router';
 import Head from 'expo-router/head';
-import React, { useMemo } from 'react';
-import { Platform, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
-import { BrandWall } from '../components/BrandLogos';
-import { Hypnogram, ScoreRing } from '../components/Charts';
-import { PaperScrap } from '../components/Collage';
-import { CommentIcon, StarIcon } from '../components/Icons';
+import React, { useState } from 'react';
+import { Platform, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { BRANDS, BrandMark, BrandWall } from '../components/BrandLogos';
+import { HeroStage } from '../components/HeroStage';
 import { Mascot } from '../components/Mascot';
 import type { MascotProps } from '../components/mascotConfig';
 import { MascotSays } from '../components/MascotSays';
-import { Button, Stat, Tag } from '../components/Ui';
-import { buildSession, rng } from '../data/generate';
-import { C, F, FLOAT, R, S, T, scoreTag } from '../theme';
+import { Button, TextLink } from '../components/Ui';
+import { C, F, R, S, T } from '../theme';
 
 // Public landing page. Only signed-out visitors on the web reach it (see app/_layout.tsx);
 // the phone apps open straight at sign-in.
@@ -19,12 +16,15 @@ import { C, F, FLOAT, R, S, T, scoreTag } from '../theme';
 const PAGE_W = 1120;
 const WIDE = 900;
 
-const signUp = () => router.push('/sign-in?mode=sign-up');
+const signUp = (email = '') =>
+  router.push(email.trim() ? `/sign-in?mode=sign-up&email=${encodeURIComponent(email.trim())}` : '/sign-in?mode=sign-up');
+const HERO_BRANDS = BRANDS.filter((b) => ['Apple Watch', 'Garmin', 'Oura', 'Whoop'].includes(b.name));
 const logIn = () => router.push('/sign-in?mode=sign-in');
 
 export default function Landing() {
   const { width } = useWindowDimensions();
   const wide = width >= WIDE;
+  const [artW, setArtW] = useState(0);
 
   return (
     <View style={{ flex: 1, backgroundColor: C.canvas }}>
@@ -41,33 +41,33 @@ export default function Landing() {
       <ScrollView>
         {/* Hero */}
         <View style={[st.wrap, st.hero, wide && st.heroWide]}>
-          <View style={[{ gap: S.lg }, wide && { flex: 1.15, paddingRight: S.section }]}>
-            <Text style={T.eyebrow}>The social feed for sleep</Text>
-            <Text style={[st.headline, wide ? { fontSize: 68, lineHeight: 72 } : { fontSize: 44, lineHeight: 48 }]}>
-              Sleep better, together.
-            </Text>
+          <View style={[{ gap: S.lg }, wide && { flex: 1, paddingRight: 56 }]}>
+            <Text style={[st.headline, wide ? { fontSize: 72, lineHeight: 74 } : { fontSize: 46, lineHeight: 50 }]}>Sleep is a team sport now.</Text>
             <Text style={st.lede}>
-              Kudoze turns last night from your watch or ring into a post. Give friends kudos for a good night, compare bedtimes and keep
-              each other honest.
+              Kudoze is the social feed for sleep. Your watch or ring posts last night, friends give kudos, and a bedtime leaderboard keeps
+              everyone honest.
             </Text>
-            <View style={st.ctaRow}>
-              <Button label="Join for free" onPress={signUp} />
-              <Button label="Log in" kind="ghost" onPress={logIn} />
+            <EmailJoin />
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 6 }}>
+              <Text style={T.small}>Free, and your nights are followers-only.</Text>
+              <TextLink label="Already in? Log in" onPress={logIn} />
             </View>
-            <Text style={T.caption}>Free to join. Your nights are followers-only unless you choose otherwise.</Text>
+            <View style={st.syncs}>
+              <Text style={T.small}>Syncs with</Text>
+              {HERO_BRANDS.map((b) => (
+                <View key={b.name} style={{ transform: [{ scale: 0.78 }], marginHorizontal: -6 }}>
+                  <BrandMark brand={b} color={C.muted} />
+                </View>
+              ))}
+              <Text style={T.small}>and 7 more</Text>
+            </View>
           </View>
 
-          <View style={[st.heroArt, wide ? { flex: 1 } : { marginTop: S.section + 8 }]}>
-            <PaperScrap width={150} height={96} color={C.mint} seed={4} rotate={-8} style={{ top: 20, left: -18 }} />
-            <PaperScrap width={110} height={140} color={C.periwinkle} seed={9} rotate={6} style={{ bottom: -30, right: -14 }} />
-            <MascotSays
-              size={wide ? 132 : 108}
-              mascot={{ smile: true, bowTie: true }}
-              style={{ alignSelf: 'flex-start', marginBottom: -14, marginLeft: wide ? -24 : -8, zIndex: 2 }}
-            >
-              Hi, I’m Plume. Mira slept 7h 32m. That’s worth a kudos!
-            </MascotSays>
-            <SampleNight />
+          <View
+            style={[wide ? { flex: 1.05 } : { marginTop: S.section + 24 }]}
+            onLayout={(e) => setArtW(Math.round(e.nativeEvent.layout.width))}
+          >
+            {artW > 0 && <HeroStage width={artW} />}
           </View>
         </View>
 
@@ -141,8 +141,8 @@ export default function Landing() {
           <Text style={[T.body, { color: C.muted, textAlign: 'center', marginTop: S.md, maxWidth: 420 }]}>
             Connect your device, follow a few friends and see who sleeps best this week.
           </Text>
-          <View style={[st.ctaRow, { justifyContent: 'center', marginTop: S.xl }]}>
-            <Button label="Join for free" onPress={signUp} />
+          <View style={{ marginTop: S.xl, width: '100%', maxWidth: 460 }}>
+            <EmailJoin />
           </View>
         </View>
 
@@ -162,53 +162,38 @@ function Nav() {
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: S.sm }}>
           <Button label="Log in" kind="ghost" small onPress={logIn} />
-          <Button label="Sign up" small onPress={signUp} />
+          <Button label="Sign up" small onPress={() => signUp()} />
         </View>
       </View>
     </View>
   );
 }
 
-/** A made-up night as it appears in the feed, so visitors see what a post looks like. */
-function SampleNight() {
-  const session = useMemo(() => {
-    const bed = new Date();
-    bed.setDate(bed.getDate() - 1);
-    bed.setHours(23, 12, 0, 0);
-    return buildSession(rng(11), bed, 452, 'oura');
-  }, []);
-  const tag = scoreTag(86);
-
+/** Email first, like the big fitness apps: one field and one button, the rest happens on the next screen. */
+function EmailJoin() {
+  const [email, setEmail] = useState('');
+  const [focused, setFocused] = useState(false);
+  const { width } = useWindowDimensions();
+  const stacked = width < 520;
   return (
-    <View style={[st.sample, FLOAT]} accessibilityLabel="Example post: Mira slept 7 hours 32 minutes with a score of 86 and got 12 kudos">
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: S.md }}>
-        <View style={st.avatar}>
-          <Text style={T.smallStrong}>MV</Text>
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={T.bodyStrong}>Mira V.</Text>
-          <Text style={T.caption}>Last night · Oura Ring</Text>
-        </View>
-        <Tag label={tag.label} bg={tag.bg} />
-      </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: S.lg, marginTop: S.lg }}>
-        <ScoreRing score={86} size={68} />
-        <Stat label="Asleep" value="7h 32m" />
-        <Stat label="Lights out" value="23:12" />
-      </View>
-      <View style={st.chart}>
-        <Hypnogram session={session} compact />
-      </View>
-      <View style={st.sampleFoot}>
-        <View style={st.meta}>
-          <StarIcon size={17} color={C.wine} filled />
-          <Text style={T.small}>12 kudos</Text>
-        </View>
-        <View style={st.meta}>
-          <CommentIcon size={17} color={C.muted} />
-          <Text style={T.small}>“Finally beat my bedtime!”</Text>
-        </View>
-      </View>
+    <View style={[st.join, stacked && st.joinStacked, focused && { borderColor: C.ink }]}>
+      <TextInput
+        value={email}
+        onChangeText={setEmail}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        onSubmitEditing={() => signUp(email)}
+        placeholder="Your email"
+        placeholderTextColor={C.faint}
+        autoCapitalize="none"
+        autoComplete="email"
+        keyboardType="email-address"
+        textContentType="emailAddress"
+        returnKeyType="go"
+        accessibilityLabel="Your email"
+        style={[st.joinInput, stacked && { paddingVertical: 12 }, Platform.OS === 'web' && ({ outlineStyle: 'none' } as object)]}
+      />
+      <Button label="Join for free" onPress={() => signUp(email)} full={stacked} />
     </View>
   );
 }
@@ -258,34 +243,26 @@ const st = StyleSheet.create({
     zIndex: 5,
   },
   navInner: { height: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  hero: { paddingTop: 72, paddingBottom: 96 },
-  heroWide: { flexDirection: 'row', alignItems: 'center', paddingTop: 104, paddingBottom: 120 },
+  hero: { paddingTop: 56, paddingBottom: 88 },
+  heroWide: { flexDirection: 'row', alignItems: 'center', paddingTop: 72, paddingBottom: 104 },
   headline: { fontFamily: F.serif, color: C.ink, letterSpacing: -2 },
   lede: { ...T.body, fontSize: 18, lineHeight: 27, color: C.muted, maxWidth: 500 },
-  ctaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: S.md, marginTop: S.sm },
-  heroArt: { alignItems: 'center', justifyContent: 'center', overflow: 'visible' },
-  sample: {
-    width: '100%',
-    maxWidth: 400,
+  join: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: S.sm,
     backgroundColor: C.paper,
-    borderRadius: R.sheet,
     borderWidth: 1,
     borderColor: C.line,
-    padding: S.xl,
+    borderRadius: R.pill,
+    padding: 5,
+    paddingLeft: 20,
+    maxWidth: 460,
+    marginTop: S.sm,
   },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: C.lilac,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(41,40,39,0.12)',
-  },
-  chart: { marginTop: S.lg, backgroundColor: C.inset, borderRadius: R.input, padding: S.md },
-  sampleFoot: { marginTop: S.lg, gap: S.sm },
-  meta: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  joinStacked: { flexDirection: 'column', alignItems: 'stretch', borderRadius: R.card + 4, padding: 6, paddingLeft: 6 },
+  joinInput: { flex: 1, minWidth: 0, fontFamily: F.sans, fontSize: 16, color: C.ink, paddingVertical: 8, paddingHorizontal: 8 },
+  syncs: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 14, rowGap: 6, marginTop: S.md },
   devices: { borderTopWidth: 1, borderBottomWidth: 1, borderColor: C.line, backgroundColor: C.paper, paddingVertical: 44 },
   features: { marginTop: 48, gap: S.lg },
   feature: { flex: 1, backgroundColor: C.paper, borderRadius: R.card, borderWidth: 1, borderColor: C.line, padding: S.xl },
