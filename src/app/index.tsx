@@ -125,7 +125,7 @@ export default function Landing() {
         <View style={st.band}>
           <View style={[st.wrap, wide && { flexDirection: 'row', alignItems: 'flex-start', gap: 64 }]}>
             <View style={[{ gap: S.md }, wide && { flex: 1 }]}>
-              <MascotSays size={96} onDark mascot={{ glasses: 'shades' }} style={{ marginBottom: S.md }}>
+              <MascotSays size={96} onDark mascot={{ state: 'sleeping' }} style={{ marginBottom: S.md }}>
                 What happens in bed stays in bed.
               </MascotSays>
               <Text style={[T.h1, { color: C.onDark }, wide && { fontSize: 40, lineHeight: 44 }]}>Your sleep stays yours.</Text>
