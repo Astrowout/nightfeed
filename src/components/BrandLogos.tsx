@@ -32,11 +32,16 @@ type Brand = {
 
 const CAPS: TextStyle = { fontFamily: F.sansBold, letterSpacing: 2.2, textTransform: 'uppercase', fontSize: 15 };
 
+// Ordered by how many wearable owners use each brand. The first FEATURED_COUNT lead the landing
+// page; the rest are shown faded as "coming soon". Shares from Rock Health's 2025 Consumer
+// Adoption Survey (8,000 US adults, multi-select, so they add up to more than 100%): Apple 63%,
+// Fitbit 27%, Samsung 16%, Garmin 8%, Oura 6%. The survey does not report the smaller brands.
+// https://rockhealth.com/insights/whats-your-score-insights-on-wearables-and-connected-devices-from-rock-healths-2025-consumer-adoption-survey/
 export const BRANDS: Brand[] = [
   { name: 'Apple Watch', svg: { d: PATH.apple, viewBox: '0 0 24 24', height: 24, ratio: 1 }, word: 'Watch', wordStyle: { fontFamily: F.sansSemi, fontSize: 19, letterSpacing: -0.3 } },
-  { name: 'Garmin', svg: { d: PATH.garmin, viewBox: '0 8.9 24 6.5', height: 26, ratio: 24 / 6.5 } },
-  { name: 'Samsung Galaxy Watch', svg: { d: PATH.samsung, viewBox: '0 10.1 24 3.8', height: 17, ratio: 24 / 3.8 } },
   { name: 'Fitbit', svg: { d: PATH.fitbit, viewBox: '0 0 24 24', height: 24, ratio: 1 }, word: 'fitbit', wordStyle: { fontFamily: F.sansSemi, fontSize: 20, letterSpacing: -0.4 } },
+  { name: 'Samsung Galaxy Watch', svg: { d: PATH.samsung, viewBox: '0 10.1 24 3.8', height: 17, ratio: 24 / 3.8 } },
+  { name: 'Garmin', svg: { d: PATH.garmin, viewBox: '0 8.9 24 6.5', height: 26, ratio: 24 / 6.5 } },
   { name: 'Oura', word: 'ŌURA', wordStyle: { ...CAPS, fontFamily: F.serif, letterSpacing: 4, fontSize: 18 } },
   { name: 'Whoop', word: 'WHOOP', wordStyle: { ...CAPS, fontSize: 17, letterSpacing: 1.4 } },
   { name: 'Polar', word: 'POLAR', wordStyle: { ...CAPS, fontStyle: 'italic' } },
@@ -46,31 +51,66 @@ export const BRANDS: Brand[] = [
   { name: 'Health Connect', word: 'Health Connect', wordStyle: { fontFamily: F.sansMedium, fontSize: 17, letterSpacing: -0.2 } },
 ];
 
-export function BrandMark({ brand, color = C.ink }: { brand: Brand; color?: string }) {
+const FEATURED_COUNT = 5;
+/** The most-worn brands, which lead the landing page. */
+export const FEATURED_BRANDS = BRANDS.slice(0, FEATURED_COUNT);
+/** Everything else, shown faded as coming soon. */
+export const LATER_BRANDS = BRANDS.slice(FEATURED_COUNT);
+
+/** One brand in one ink. `scale` sizes the mark and its type together, so layout gaps stay true. */
+export function BrandMark({ brand, color = C.ink, scale = 1 }: { brand: Brand; color?: string; scale?: number }) {
+  const ws = brand.wordStyle;
+  const wordStyle: TextStyle | undefined = ws && {
+    ...ws,
+    fontSize: (ws.fontSize ?? 16) * scale,
+    letterSpacing: ws.letterSpacing !== undefined ? ws.letterSpacing * scale : undefined,
+  };
   return (
     <View
       accessible
       accessibilityRole="image"
       accessibilityLabel={brand.name}
-      style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 32 }}
+      style={{ flexDirection: 'row', alignItems: 'center', gap: 6 * scale, height: 32 * scale }}
     >
       {brand.svg && (
-        <Svg width={brand.svg.height * brand.svg.ratio} height={brand.svg.height} viewBox={brand.svg.viewBox}>
+        <Svg width={brand.svg.height * brand.svg.ratio * scale} height={brand.svg.height * scale} viewBox={brand.svg.viewBox}>
           <Path d={brand.svg.d} fill={color} />
         </Svg>
       )}
-      {brand.word && <Text style={[{ color }, brand.wordStyle]}>{brand.word}</Text>}
+      {brand.word && <Text style={[{ color }, wordStyle]}>{brand.word}</Text>}
     </View>
   );
 }
 
-/** A wrapping row of every supported device brand, in one muted ink. */
-export function BrandWall({ color = C.ink }: { color?: string }) {
+/**
+ * The devices band: the most-worn brands in full ink, then a "Coming soon" divider and the
+ * rest smaller and faded, so the eye lands on the brands most visitors own.
+ */
+export function BrandWall() {
   return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', columnGap: 40, rowGap: 20, opacity: 0.78 }}>
-      {BRANDS.map((b) => (
-        <BrandMark key={b.name} brand={b} color={color} />
-      ))}
+    <View style={{ alignItems: 'center', gap: 28 }}>
+      <View style={[row, { columnGap: 44, rowGap: 22 }]}>
+        {FEATURED_BRANDS.map((b) => (
+          <BrandMark key={b.name} brand={b} color={C.ink} />
+        ))}
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, width: '100%', maxWidth: 520 }}>
+        <View style={rule} />
+        <View style={{ backgroundColor: C.lilac, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3 }}>
+          <Text style={{ fontFamily: F.sansSemi, fontSize: 11, lineHeight: 14, letterSpacing: 0.9, textTransform: 'uppercase', color: C.ink }}>
+            Coming soon
+          </Text>
+        </View>
+        <View style={rule} />
+      </View>
+      <View style={[row, { columnGap: 32, rowGap: 14, opacity: 0.5 }]}>
+        {LATER_BRANDS.map((b) => (
+          <BrandMark key={b.name} brand={b} color={C.muted} scale={0.8} />
+        ))}
+      </View>
     </View>
   );
 }
+
+const row = { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' } as const;
+const rule = { flex: 1, height: 1, backgroundColor: C.line } as const;

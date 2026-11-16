@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import Head from 'expo-router/head';
 import React, { useRef, useState } from 'react';
 import { Platform, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
-import { BRANDS, BrandMark, BrandWall } from '../components/BrandLogos';
+import { BrandMark, BrandWall, FEATURED_BRANDS } from '../components/BrandLogos';
 import { HeroStage } from '../components/HeroStage';
 import { JOIN_ROW, WIDE, lp } from '../components/landingCss';
 import { Mascot } from '../components/Mascot';
@@ -21,7 +21,6 @@ import { C, F, R, S, T } from '../theme';
 const PAGE_W = 1120;
 const WEB = Platform.OS === 'web';
 
-const HERO_BRANDS = BRANDS.filter((b) => ['Apple Watch', 'Garmin', 'Oura', 'Whoop'].includes(b.name));
 const logIn = () => router.push('/sign-in?mode=sign-in');
 
 export default function Landing() {
@@ -65,12 +64,9 @@ export default function Landing() {
             <EmailJoin joined={joined} onJoined={setJoined} inputRef={heroInput} source="hero" />
             <View style={st.syncs}>
               <Text style={T.small}>Syncs with</Text>
-              {HERO_BRANDS.map((b) => (
-                <View key={b.name} style={{ transform: [{ scale: 0.78 }], marginHorizontal: -6 }}>
-                  <BrandMark brand={b} color={C.muted} />
-                </View>
+              {FEATURED_BRANDS.map((b) => (
+                <BrandMark key={b.name} brand={b} color={C.muted} scale={0.72} />
               ))}
-              <Text style={T.small}>and 7 more</Text>
               <Tag label="Coming soon" bg={C.lilac} />
             </View>
           </View>
@@ -87,7 +83,7 @@ export default function Landing() {
         {/* Devices */}
         <View style={st.devices}>
           <View style={st.wrap}>
-            <Text style={[T.eyebrow, { textAlign: 'center', marginBottom: S.xl }]}>Coming soon for what you already wear</Text>
+            <Text style={[T.eyebrow, { textAlign: 'center', marginBottom: S.xl }]}>Made for what you already wear</Text>
             <BrandWall />
           </View>
         </View>
