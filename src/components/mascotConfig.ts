@@ -5,7 +5,7 @@
 
 export type MascotLook = 'moon' | 'pillow';
 export type MascotState = 'default' | 'working' | 'sleeping';
-export type MascotGlasses = 'none' | 'round' | 'square' | 'shades';
+export type MascotGlasses = 'none' | 'round' | 'square' | 'shades' | 'mask';
 
 export const MASCOT_LOOK: MascotLook = 'pillow';
 export const MASCOT_NAME = 'Plume';

@@ -1,4 +1,5 @@
-import { BotAvatar } from 'bot-avatars';
+// bot-avatars is vendored (vendor/bot-avatars) for Plume's sleep mask; see vendor/bot-avatars/KUDOZE.md.
+import { BotAvatar } from '../../vendor/bot-avatars';
 import React from 'react';
 import { View } from 'react-native';
 import { LOOKS, MASCOT_LOOK, ACCESSORY, mascotLabel, type MascotProps } from './mascotConfig';
