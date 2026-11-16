@@ -6,9 +6,8 @@ import { C, F } from '../theme';
 // Logos for the devices Kudoze syncs with, shown in one ink colour on the landing page.
 // SVG paths come from Simple Icons 16.38.0 (CC0-1.0, https://simpleicons.org). The icons are
 // public domain, but the marks are trademarks of their owners: check each brand's
-// "works with" guidelines before launch. Brands with no Simple Icons entry (Oura, Whoop,
-// Polar, Suunto, Ultrahuman, Withings, Health Connect) are set as type until we have
-// their official files.
+// "works with" guidelines before launch. Brands with no Simple Icons entry (Oura, Whoop) are
+// set as type until we have their official files.
 
 const PATH = {
   apple:
@@ -33,7 +32,8 @@ type Brand = {
 const CAPS: TextStyle = { fontFamily: F.sansBold, letterSpacing: 2.2, textTransform: 'uppercase', fontSize: 15 };
 
 // Ordered by how many wearable owners use each brand. The first FEATURED_COUNT lead the landing
-// page; the rest are shown faded as "coming soon". Shares from Rock Health's 2025 Consumer
+// page; the next one, Whoop, is shown faded as "coming soon". The app syncs more brands than
+// this (see server/app.ts); the landing page names only these six. Shares from Rock Health's 2025 Consumer
 // Adoption Survey (8,000 US adults, multi-select, so they add up to more than 100%): Apple 63%,
 // Fitbit 27%, Samsung 16%, Garmin 8%, Oura 6%. The survey does not report the smaller brands.
 // https://rockhealth.com/insights/whats-your-score-insights-on-wearables-and-connected-devices-from-rock-healths-2025-consumer-adoption-survey/
@@ -44,17 +44,12 @@ export const BRANDS: Brand[] = [
   { name: 'Garmin', svg: { d: PATH.garmin, viewBox: '0 8.9 24 6.5', height: 26, ratio: 24 / 6.5 } },
   { name: 'Oura', word: 'ŌURA', wordStyle: { ...CAPS, fontFamily: F.serif, letterSpacing: 4, fontSize: 18 } },
   { name: 'Whoop', word: 'WHOOP', wordStyle: { ...CAPS, fontSize: 17, letterSpacing: 1.4 } },
-  { name: 'Polar', word: 'POLAR', wordStyle: { ...CAPS, fontStyle: 'italic' } },
-  { name: 'Suunto', word: 'SUUNTO', wordStyle: CAPS },
-  { name: 'Ultrahuman', word: 'ULTRAHUMAN', wordStyle: { ...CAPS, fontFamily: F.sansMedium, fontSize: 14, letterSpacing: 2.6 } },
-  { name: 'Withings', word: 'Withings', wordStyle: { fontFamily: F.sansMedium, fontSize: 19, letterSpacing: -0.2 } },
-  { name: 'Health Connect', word: 'Health Connect', wordStyle: { fontFamily: F.sansMedium, fontSize: 17, letterSpacing: -0.2 } },
 ];
 
 const FEATURED_COUNT = 5;
 /** The most-worn brands, which lead the landing page. */
 export const FEATURED_BRANDS = BRANDS.slice(0, FEATURED_COUNT);
-/** Everything else, shown faded as coming soon. */
+/** The next most-worn brand, shown faded as coming soon. */
 export const LATER_BRANDS = BRANDS.slice(FEATURED_COUNT);
 
 /** One brand in one ink. `scale` sizes the mark and its type together, so layout gaps stay true. */

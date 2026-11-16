@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import Head from 'expo-router/head';
 import React, { useRef, useState } from 'react';
 import { Platform, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
-import { BrandMark, BrandWall, FEATURED_BRANDS } from '../components/BrandLogos';
+import { BrandMark, BrandWall, FEATURED_BRANDS, LATER_BRANDS } from '../components/BrandLogos';
 import { HeroStage } from '../components/HeroStage';
 import { JOIN_ROW, WIDE, lp } from '../components/landingCss';
 import { Mascot } from '../components/Mascot';
@@ -67,6 +67,10 @@ export default function Landing() {
               {FEATURED_BRANDS.map((b) => (
                 <BrandMark key={b.name} brand={b} color={C.muted} scale={0.72} />
               ))}
+              {/* The next most-worn brand, faded like the devices band's coming-soon row. */}
+              <View style={{ opacity: 0.5 }}>
+                <BrandMark brand={LATER_BRANDS[0]} color={C.muted} scale={0.72} />
+              </View>
               <Tag label="Coming soon" bg={C.lilac} />
             </View>
           </View>
