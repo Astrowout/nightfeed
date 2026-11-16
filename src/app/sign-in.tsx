@@ -49,7 +49,7 @@ export default function SignInScreen() {
           <View style={{ flexDirection: 'row' }}>
             <Wordmark size={27} onPress={Platform.OS === 'web' ? () => router.replace('/') : undefined} />
           </View>
-          <MascotSays size={96} mascot={{ state: 'sleeping', glasses: 'mask' }} style={{ marginTop: S.xl }}>
+          <MascotSays size={96} style={{ marginTop: S.xl }}>
             Hi, I’m Plume. Let’s get you to bed.
           </MascotSays>
           <Text style={[T.display, { marginTop: S.lg, maxWidth: 330 }]}>Your nights, kept together.</Text>
