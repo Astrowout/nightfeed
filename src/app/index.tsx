@@ -154,7 +154,7 @@ export default function Landing() {
           </View>
         </View>
 
-        <Footer />
+        <Footer onHome={() => scroll.current?.scrollTo({ y: 0, animated: true })} />
       </ScrollView>
     </View>
   );
@@ -281,13 +281,14 @@ function Point({ title, body }: { title: string; body: string }) {
   );
 }
 
-function Footer() {
+function Footer({ onHome }: { onHome: () => void }) {
   return (
     <View style={st.footer}>
       <View style={[st.wrap, { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: S.md }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <Mascot size={28} interactive={false} />
-          <Text style={T.small}>© {new Date().getFullYear()} Kudoze</Text>
+          <Wordmark size={20} onPress={onHome} label="Back to top" />
+          <Text style={T.small}>© {new Date().getFullYear()}</Text>
         </View>
         <Text style={T.small}>Coming soon to iPhone, Android and the web.</Text>
       </View>
