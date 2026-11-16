@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, View, type TextStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { C, F } from '../theme';
+import { C, F, R } from '../theme';
 
 // Logos for the devices Kudoze syncs with, shown in one ink colour on the landing page.
 // SVG paths come from Simple Icons 16.38.0 (CC0-1.0, https://simpleicons.org). The icons are
@@ -31,9 +31,9 @@ type Brand = {
 
 const CAPS: TextStyle = { fontFamily: F.sansBold, letterSpacing: 2.2, textTransform: 'uppercase', fontSize: 15 };
 
-// Ordered by how many wearable owners use each brand. The first FEATURED_COUNT lead the landing
-// page; the next one, Whoop, is shown faded as "coming soon". The app syncs more brands than
-// this (see server/app.ts); the landing page names only these six. Shares from Rock Health's 2025 Consumer
+// Ordered by how many wearable owners use each brand. Apple Watch comes first, at launch; the
+// rest are shown faded as "coming soon". The app syncs more brands than this (see
+// server/app.ts); the landing page names only these six. Shares from Rock Health's 2025 Consumer
 // Adoption Survey (8,000 US adults, multi-select, so they add up to more than 100%): Apple 63%,
 // Fitbit 27%, Samsung 16%, Garmin 8%, Oura 6%. The survey does not report the smaller brands.
 // https://rockhealth.com/insights/whats-your-score-insights-on-wearables-and-connected-devices-from-rock-healths-2025-consumer-adoption-survey/
@@ -46,11 +46,10 @@ export const BRANDS: Brand[] = [
   { name: 'Whoop', word: 'WHOOP', wordStyle: { ...CAPS, fontSize: 17, letterSpacing: 1.4 } },
 ];
 
-const FEATURED_COUNT = 5;
-/** The most-worn brands, which lead the landing page. */
-export const FEATURED_BRANDS = BRANDS.slice(0, FEATURED_COUNT);
-/** The next most-worn brand, shown faded as coming soon. */
-export const LATER_BRANDS = BRANDS.slice(FEATURED_COUNT);
+/** The brand Kudoze launches with. */
+export const LAUNCH_BRAND = BRANDS[0];
+/** The brands that follow, shown faded as coming soon. */
+export const SOON_BRANDS = BRANDS.slice(1);
 
 /** One brand in one ink. `scale` sizes the mark and its type together, so layout gaps stay true. */
 export function BrandMark({ brand, color = C.ink, scale = 1 }: { brand: Brand; color?: string; scale?: number }) {
@@ -78,34 +77,47 @@ export function BrandMark({ brand, color = C.ink, scale = 1 }: { brand: Brand; c
 }
 
 /**
- * The devices band: the most-worn brands in full ink, then a "Coming soon" divider and the
- * rest smaller and faded, so the eye lands on the brands most visitors own.
+ * The devices band: a row of tiles, one per brand. Apple Watch is lit (white, hairline, a mint
+ * "At launch" label); the others are dimmed wells with a faded mark and "Coming soon", so the
+ * launch device reads at a glance and the rest read as a roadmap.
  */
 export function BrandWall() {
   return (
-    <View style={{ alignItems: 'center', gap: 28 }}>
-      <View style={[row, { columnGap: 44, rowGap: 22 }]}>
-        {FEATURED_BRANDS.map((b) => (
-          <BrandMark key={b.name} brand={b} color={C.ink} />
-        ))}
-      </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, width: '100%', maxWidth: 520 }}>
-        <View style={rule} />
-        <View style={{ backgroundColor: C.lilac, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3 }}>
-          <Text style={{ fontFamily: F.sansSemi, fontSize: 11, lineHeight: 14, letterSpacing: 0.9, textTransform: 'uppercase', color: C.ink }}>
-            Coming soon
-          </Text>
-        </View>
-        <View style={rule} />
-      </View>
-      <View style={[row, { columnGap: 32, rowGap: 14, opacity: 0.5 }]}>
-        {LATER_BRANDS.map((b) => (
-          <BrandMark key={b.name} brand={b} color={C.muted} scale={0.8} />
-        ))}
-      </View>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 12 }}>
+      <BrandTile brand={LAUNCH_BRAND} live />
+      {SOON_BRANDS.map((b) => (
+        <BrandTile key={b.name} brand={b} />
+      ))}
     </View>
   );
 }
 
-const row = { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' } as const;
-const rule = { flex: 1, height: 1, backgroundColor: C.line } as const;
+function BrandTile({ brand, live = false }: { brand: Brand; live?: boolean }) {
+  return (
+    <View
+      style={[
+        tile.base,
+        live ? { backgroundColor: C.paper, borderColor: C.ink } : { backgroundColor: C.inset, borderColor: C.inset },
+      ]}
+    >
+      <View style={{ flex: 1, justifyContent: 'center', opacity: live ? 1 : 0.35 }}>
+        <BrandMark brand={brand} color={live ? C.ink : C.muted} scale={0.86} />
+      </View>
+      {live ? (
+        <View style={tile.badge}>
+          <View style={tile.dot} />
+          <Text style={[tile.label, { color: C.ink }]}>At launch</Text>
+        </View>
+      ) : (
+        <Text style={[tile.label, { color: C.faint }]}>Coming soon</Text>
+      )}
+    </View>
+  );
+}
+
+const tile = {
+  base: { width: 150, height: 108, borderRadius: R.card, borderWidth: 1, alignItems: 'center', paddingTop: 10, paddingBottom: 14 },
+  badge: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: C.mint, borderWidth: 1, borderColor: '#6CC384' },
+  label: { fontFamily: F.sansSemi, fontSize: 11, lineHeight: 14, letterSpacing: 0.9, textTransform: 'uppercase' },
+} as const;
