@@ -1,9 +1,10 @@
 import { router } from 'expo-router';
 import Head from 'expo-router/head';
 import React, { useRef, useState } from 'react';
-import { Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { BRANDS, BrandMark, BrandWall } from '../components/BrandLogos';
 import { HeroStage } from '../components/HeroStage';
+import { JOIN_ROW, WIDE, lp } from '../components/landingCss';
 import { Mascot } from '../components/Mascot';
 import type { MascotProps } from '../components/mascotConfig';
 import { MascotSays } from '../components/MascotSays';
@@ -11,7 +12,6 @@ import { Wordmark } from '../components/Wordmark';
 import { Button, Tag } from '../components/Ui';
 import { ApiError, api } from '../lib/auth';
 import { APP_OPEN } from '../lib/config';
-import { usePageWidth } from '../lib/usePageWidth';
 import { C, F, R, S, T } from '../theme';
 
 // Public landing page. Only signed-out visitors on the web reach it (see app/_layout.tsx);
@@ -19,14 +19,15 @@ import { C, F, R, S, T } from '../theme';
 // emails for a waitlist (POST /api/waitlist) instead of sending people to sign up.
 
 const PAGE_W = 1120;
-const WIDE = 900;
+const WEB = Platform.OS === 'web';
 
 const HERO_BRANDS = BRANDS.filter((b) => ['Apple Watch', 'Garmin', 'Oura', 'Whoop'].includes(b.name));
 const logIn = () => router.push('/sign-in?mode=sign-in');
 
 export default function Landing() {
-  const width = usePageWidth();
-  const wide = width >= WIDE;
+  // Web: always the narrow layout here; CSS media queries widen it (landingCss.ts).
+  const { width } = useWindowDimensions();
+  const wide = !WEB && width >= WIDE;
   const [artW, setArtW] = useState(0);
   const [joined, setJoined] = useState<string | null>(null);
   const scroll = useRef<React.ComponentRef<typeof ScrollView>>(null);
@@ -50,13 +51,13 @@ export default function Landing() {
 
       <ScrollView ref={scroll}>
         {/* Hero */}
-        <View style={[st.wrap, st.hero, wide && st.heroWide]}>
-          <View style={[{ gap: S.lg }, wide && { flex: 1, paddingRight: 56 }]}>
+        <View style={[st.wrap, st.hero, wide && st.heroWide]} {...lp('hero')}>
+          <View style={[{ gap: S.lg }, wide && { flex: 1, paddingRight: 56 }]} {...lp('hero-text')}>
             <View style={st.soon}>
               <View style={st.soonDot} />
               <Text style={[T.smallStrong, { color: C.ink }]}>Coming soon to iPhone, Android and the web</Text>
             </View>
-            <Text style={[st.headline, wide ? { fontSize: 72, lineHeight: 74 } : { fontSize: 46, lineHeight: 50 }]}>Sleep is a team sport now.</Text>
+            <Text style={[st.headline, wide ? { fontSize: 72, lineHeight: 74 } : { fontSize: 46, lineHeight: 50 }]} {...lp('headline')}>Sleep is a team sport now.</Text>
             <Text style={st.lede}>
               Kudoze is the social feed for sleep. Your watch or ring posts last night, friends give kudos, and a bedtime leaderboard keeps
               everyone honest. Interested? Leave your email and you’ll hear first when it opens.
@@ -76,6 +77,7 @@ export default function Landing() {
 
           <View
             style={[wide ? { flex: 1.05 } : { marginTop: S.section + 24 }]}
+            {...lp('hero-art')}
             onLayout={(e) => setArtW(Math.round(e.nativeEvent.layout.width))}
           >
             {artW > 0 && <HeroStage width={artW} />}
@@ -97,10 +99,10 @@ export default function Landing() {
 
         {/* Features */}
         <View style={[st.wrap, { paddingVertical: 88 }]}>
-          <Text style={[T.h1, { maxWidth: 560 }, wide && { fontSize: 44, lineHeight: 48, letterSpacing: -1.4 }]}>
+          <Text style={[T.h1, { maxWidth: 560 }, wide && { fontSize: 44, lineHeight: 48, letterSpacing: -1.4 }]} {...lp('features-title')}>
             Everything a good night deserves, and a little nudge for the bad ones.
           </Text>
-          <View style={[st.features, wide && { flexDirection: 'row' }]}>
+          <View style={[st.features, wide && { flexDirection: 'row' }]} {...lp('features')}>
             <Feature
               color={C.periwinkle}
               plume={{ state: 'working' }}
@@ -124,17 +126,17 @@ export default function Landing() {
 
         {/* Privacy band */}
         <View style={st.band}>
-          <View style={[st.wrap, wide && { flexDirection: 'row', alignItems: 'flex-start', gap: 64 }]}>
-            <View style={[{ gap: S.md }, wide && { flex: 1 }]}>
+          <View style={[st.wrap, wide && { flexDirection: 'row', alignItems: 'flex-start', gap: 64 }]} {...lp('band')}>
+            <View style={[{ gap: S.md }, wide && { flex: 1 }]} {...lp('band-text')}>
               <MascotSays size={96} onDark mascot={{ state: 'sleeping', glasses: 'mask' }} style={{ marginBottom: S.md }}>
                 What happens in bed stays in bed.
               </MascotSays>
-              <Text style={[T.h1, { color: C.onDark }, wide && { fontSize: 40, lineHeight: 44 }]}>Your sleep stays yours.</Text>
+              <Text style={[T.h1, { color: C.onDark }, wide && { fontSize: 40, lineHeight: 44 }]} {...lp('band-title')}>Your sleep stays yours.</Text>
               <Text style={[T.body, { color: C.onDarkMuted, maxWidth: 440 }]}>
                 Sleep data is health data, so we treat it that way. You decide who sees each night, and you can take everything with you.
               </Text>
             </View>
-            <View style={[{ gap: S.lg, marginTop: S.xxl }, wide && { flex: 1, marginTop: 0 }]}>
+            <View style={[{ gap: S.lg, marginTop: S.xxl }, wide && { flex: 1, marginTop: 0 }]} {...lp('band-points')}>
               <Point title="Followers-only by default" body="Nobody outside the people you approve sees your nights." />
               <Point title="“Only me” for any night" body="Keep a night private with one tap, before or after you post it." />
               <Point title="Download or delete, any time" body="Export all your data or remove your account from your profile." />
@@ -146,7 +148,7 @@ export default function Landing() {
         <View style={[st.wrap, { paddingVertical: 96, alignItems: 'center' }]}>
           <Mascot size={150} state="sleeping" />
           <Text style={[T.caption, { marginTop: S.sm, fontFamily: F.serifItalic, fontSize: 15 }]}>Plume is already in bed. Zzz…</Text>
-          <Text style={[T.h1, { textAlign: 'center', marginTop: S.lg }, wide && { fontSize: 48, lineHeight: 52, letterSpacing: -1.5 }]}>
+          <Text style={[T.h1, { textAlign: 'center', marginTop: S.lg }, wide && { fontSize: 48, lineHeight: 52, letterSpacing: -1.5 }]} {...lp('close-title')}>
             Tonight is a good night to start.
           </Text>
           <Text style={[T.body, { color: C.muted, textAlign: 'center', marginTop: S.md, maxWidth: 420 }]}>
@@ -193,8 +195,9 @@ function EmailJoin({
   const [focused, setFocused] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const width = usePageWidth();
-  const stacked = width < 520;
+  // Web: always stacked here; CSS puts the field and button in a row (landingCss.ts).
+  const { width } = useWindowDimensions();
+  const stacked = WEB || width < JOIN_ROW;
 
   const submit = async () => {
     const value = email.trim();
@@ -225,7 +228,7 @@ function EmailJoin({
 
   return (
     <View style={{ gap: S.sm, marginTop: S.sm, maxWidth: 460, width: '100%' }}>
-      <View style={[st.join, stacked && st.joinStacked, focused && { borderColor: C.ink }, !!error && { borderColor: C.papaya }]}>
+      <View style={[st.join, stacked && st.joinStacked, focused && { borderColor: C.ink }, !!error && { borderColor: C.papaya }]} {...lp('join')}>
         <TextInput
           ref={inputRef}
           value={email}
@@ -245,8 +248,11 @@ function EmailJoin({
           returnKeyType="send"
           accessibilityLabel="Your email"
           style={[st.joinInput, stacked && { paddingVertical: 12 }, Platform.OS === 'web' && ({ outlineStyle: 'none' } as object)]}
+          {...lp('join-input')}
         />
-        <Button label="Keep me posted" onPress={submit} busy={busy} full={stacked} />
+        <View style={stacked && { alignSelf: 'stretch' }} {...lp('join-button')}>
+          <Button label="Keep me posted" onPress={submit} busy={busy} full={stacked} />
+        </View>
       </View>
       {error ? (
         <Text style={[T.small, { color: C.ink }]} accessibilityLiveRegion="polite">

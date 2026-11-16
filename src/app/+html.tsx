@@ -1,5 +1,6 @@
 import { ScrollViewStyleReset, useServerDocumentContext } from 'expo-router/html';
 import React, { type PropsWithChildren } from 'react';
+import { LANDING_CSS } from '../components/landingCss';
 
 // The HTML shell of every page on the web. Pages are rendered to static HTML at build time
 // (web.output "static"), so the landing page paints from the HTML itself, without waiting for the
@@ -18,6 +19,8 @@ export default function Root({ children }: PropsWithChildren) {
         {/* Native-like scrolling: the page scrolls inside its root ScrollView, not the body. */}
         <ScrollViewStyleReset />
         <style dangerouslySetInnerHTML={{ __html: 'html, body { background: #F2F0EB; }' }} />
+        {/* The landing page's wide layout, in CSS so the static HTML is right before any JavaScript runs. */}
+        <style dangerouslySetInnerHTML={{ __html: LANDING_CSS }} />
         {headNodes}
       </head>
       <body {...bodyAttributes}>
