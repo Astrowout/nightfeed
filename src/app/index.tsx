@@ -87,11 +87,6 @@ export default function Landing() {
         {/* Devices */}
         <View style={st.devices}>
           <View style={st.wrap}>
-            <View style={{ alignItems: 'center', marginBottom: S.xl }}>
-              <MascotSays size={76} mascot={{ headphones: true }}>
-                Soon I’ll listen to your watch, ring or phone. You just sleep.
-              </MascotSays>
-            </View>
             <Text style={[T.eyebrow, { textAlign: 'center', marginBottom: S.xl }]}>Coming soon for what you already wear</Text>
             <BrandWall />
           </View>
