@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import Head from 'expo-router/head';
 import React, { useRef, useState } from 'react';
-import { Platform, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { BRANDS, BrandMark, BrandWall } from '../components/BrandLogos';
 import { HeroStage } from '../components/HeroStage';
 import { Mascot } from '../components/Mascot';
@@ -11,6 +11,7 @@ import { Wordmark } from '../components/Wordmark';
 import { Button, Tag } from '../components/Ui';
 import { ApiError, api } from '../lib/auth';
 import { APP_OPEN } from '../lib/config';
+import { usePageWidth } from '../lib/usePageWidth';
 import { C, F, R, S, T } from '../theme';
 
 // Public landing page. Only signed-out visitors on the web reach it (see app/_layout.tsx);
@@ -24,7 +25,7 @@ const HERO_BRANDS = BRANDS.filter((b) => ['Apple Watch', 'Garmin', 'Oura', 'Whoo
 const logIn = () => router.push('/sign-in?mode=sign-in');
 
 export default function Landing() {
-  const { width } = useWindowDimensions();
+  const width = usePageWidth();
   const wide = width >= WIDE;
   const [artW, setArtW] = useState(0);
   const [joined, setJoined] = useState<string | null>(null);
@@ -192,7 +193,7 @@ function EmailJoin({
   const [focused, setFocused] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { width } = useWindowDimensions();
+  const width = usePageWidth();
   const stacked = width < 520;
 
   const submit = async () => {

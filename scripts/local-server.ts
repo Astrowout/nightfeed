@@ -25,7 +25,12 @@ const api = createApp(
 );
 const site = new Hono();
 site.route('/', api);
+// The web build is static HTML per page, served like Vercel does (vercel.json): the file itself,
+// then the clean URL (/sign-in -> sign-in.html), then the dynamic pages, then the landing page.
 site.use('/*', serveStatic({ root: './dist' }));
+site.use('/*', serveStatic({ root: './dist', rewriteRequestPath: (p) => `${p.replace(/\/$/, '')}.html` }));
+site.get('/night/:id', serveStatic({ path: './dist/night/[id].html' }));
+site.get('/sleeper/:id', serveStatic({ path: './dist/sleeper/[id].html' }));
 site.get('*', serveStatic({ path: './dist/index.html' }));
 
 serve({ fetch: site.fetch, port }, () => console.log(`Kudoze running on http://localhost:${port}`));

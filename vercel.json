@@ -5,9 +5,12 @@
   "buildCommand": "npm run db:migrate && npx expo export -p web",
   "devCommand": "npx expo start --web --port $PORT",
   "outputDirectory": "dist",
+  "cleanUrls": true,
   "regions": ["fra1"],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/night/:id", "destination": "/night/[id].html" },
+    { "source": "/sleeper/:id", "destination": "/sleeper/[id].html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

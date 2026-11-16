@@ -4,14 +4,16 @@ import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
 /**
- * Web runs on the same domain as the API, so it uses relative URLs and cookies.
+ * Web runs on the same domain as the API, so it uses its own origin and cookies.
  * The phone apps call the deployed API and keep the session in the secure keychain.
+ * The web pages are also rendered to HTML at build time, in Node, where there is no window;
+ * the auth client needs an absolute URL there, but nothing is fetched during that render.
  */
 export const API_BASE =
   Platform.OS === 'web'
     ? typeof window !== 'undefined'
       ? window.location.origin
-      : ''
+      : 'http://localhost'
     : (process.env.EXPO_PUBLIC_API_URL ?? 'https://kudoze.app');
 
 export const authClient = createAuthClient({
