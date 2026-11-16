@@ -98,9 +98,9 @@ export interface NightPhotoRef {
 }
 
 export type ChallengeKind =
-  | { type: 'min_duration'; minutes: number; nights: number }
+  | { type: 'in_bed'; minutes: number; nights: number } // time in bed, lights out to wake-up
   | { type: 'lights_out'; before: string; nights: number } // "23:30"
-  | { type: 'streak'; minScore: number; nights: number };
+  | { type: 'steady_wake'; window: number; nights: number }; // minutes from your usual wake time
 
 export interface Challenge {
   id: string;

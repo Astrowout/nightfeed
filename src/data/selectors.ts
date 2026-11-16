@@ -1,4 +1,5 @@
-import { asleepMinutes, bedtimeMinutes, scoreNight } from './score.js';
+import { challengeNights, isKnownKind } from './challenges.js';
+import { asleepMinutes, scoreNight } from './score.js';
 import type { AppState, Challenge, Night } from './types.js';
 
 export const byNewest = (a: Night, b: Night) => (a.session.end_time < b.session.end_time ? 1 : -1);
@@ -114,20 +115,7 @@ export function challengeProgress(state: AppState, c: Challenge, sleeperId: stri
       return t >= start && t < end && !n.session.is_nap;
     })
     .reverse();
-  const k = c.kind;
-  if (k.type === 'min_duration') return list.filter((n) => asleepMinutes(n.session) >= k.minutes).length;
-  if (k.type === 'lights_out') {
-    const [h, m] = k.before.split(':').map(Number);
-    const limit = (h * 60 + m - 18 * 60 + 1440) % 1440;
-    return list.filter((n) => bedtimeMinutes(n.session.start_time) <= limit).length;
-  }
-  let best = 0;
-  let run = 0;
-  for (const n of list) {
-    run = scoreNight(n, state.nights).total >= k.minScore ? run + 1 : 0;
-    best = Math.max(best, run);
-  }
-  return best;
+  return isKnownKind(c.kind) ? challengeNights(c.kind, list.map((n) => n.session)) : 0;
 }
 
 export function challengeTarget(c: Challenge): number {

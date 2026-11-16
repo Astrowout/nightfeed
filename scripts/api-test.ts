@@ -7,8 +7,11 @@ import assert from 'node:assert/strict';
 import { createApp } from '../server/app.js';
 import type { DB } from '../server/db.js';
 import { seedDemo } from '../server/demo.js';
+import { rescoreStale } from '../server/nights.js';
 import { readEnv } from '../server/env.js';
-import { schema } from '../server/schema.js';
+import { nights, schema } from '../server/schema.js';
+import { eq } from 'drizzle-orm';
+import { SCORE_VERSION } from '../src/data/score.js';
 
 const BASE = 'http://localhost:3000';
 process.env.TZ = 'Europe/Brussels';
@@ -60,6 +63,19 @@ assert.ok(state.nights.some((n: any) => n.sleeperId === state.meId), 'own backfi
 assert.ok(state.challenges.length >= 3);
 assert.ok(state.nights.every((n: any) => typeof n.score.total === 'number'));
 ok(`state has ${state.nights.length} nights, ${state.challenges.length} challenges, scores stored`);
+
+assert.ok(state.nights.every((n: any) => n.score.v === SCORE_VERSION && !('stages' in n.score)), 'scores use the timing formula');
+assert.deepEqual(new Set(state.challenges.map((c: any) => c.kind.type)), new Set(['in_bed', 'lights_out', 'steady_wake']));
+ok('scores leave stages out; challenges reward habits, not scores');
+
+const [old] = await db.select({ id: nights.id }).from(nights).limit(1);
+await db.update(nights).set({ score: 1, scoreBreakdown: { total: 1, duration: 1, stages: 1, consistency: 1, interruptions: 1 } as any }).where(eq(nights.id, old.id));
+assert.equal(await rescoreStale(db as unknown as DB), 1);
+const [fixed] = await db.select().from(nights).where(eq(nights.id, old.id));
+assert.equal(fixed.scoreBreakdown.v, SCORE_VERSION);
+assert.equal(fixed.score, fixed.scoreBreakdown.total);
+assert.equal(await rescoreStale(db as unknown as DB), 0);
+ok('nights stored with the old formula get rescored once');
 
 const draft = (await call('POST', '/api/sync')).json;
 assert.ok(draft.session.start_time && draft.title);

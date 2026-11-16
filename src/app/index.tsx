@@ -102,7 +102,7 @@ export default function Landing() {
               color={C.periwinkle}
               plume={{ state: 'working' }}
               title="Post last night"
-              body="Your night syncs from your device each morning: time asleep, stages and a score. Add a note, then post it or keep it to yourself."
+              body="Your night syncs from your device each morning: time asleep, lights out, wake-up and a score. Add a note, then post it or keep it to yourself."
             />
             <Feature
               color={C.peach}

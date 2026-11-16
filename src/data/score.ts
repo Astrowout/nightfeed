@@ -1,18 +1,24 @@
 import type { Night, SleepSession } from './types.js';
 
 // Our own score, computed from normalised minutes only, so every brand is
-// scored the same way. Weights follow four pillars:
-// duration 0.40, stages 0.20, consistency 0.20, interruptions 0.20.
-// When a provider has no stage data (Whoop, Suunto) that pillar is dropped
-// and the remaining weights are rescaled, instead of guessing stages.
+// scored the same way. It leans on timing, which wearables measure well:
+// duration 0.35, regular lights out 0.25, regular wake-up 0.25, interruptions 0.15.
+// Sleep stages are left out on purpose: wrist devices agree poorly with lab
+// tests on stages, so scoring them would mostly compare devices, not nights.
+// Regularity needs 3 earlier nights; until then those pillars are dropped and
+// the remaining weights are rescaled.
 
-export const WEIGHTS = { duration: 0.4, stages: 0.2, consistency: 0.2, interruptions: 0.2 };
+/** Bump when the formula changes, so stored breakdowns get recomputed. */
+export const SCORE_VERSION = 2;
+
+export const WEIGHTS = { duration: 0.35, bedtime: 0.25, wake: 0.25, interruptions: 0.15 };
 
 export interface ScoreBreakdown {
+  v?: number;
   total: number;
   duration: number;
-  stages: number | null;
-  consistency: number | null;
+  bedtime: number | null;
+  wake: number | null;
   interruptions: number;
 }
 
@@ -31,17 +37,6 @@ function durationScore(min: number): number {
   return clamp(100 - (h - 9) * 25);
 }
 
-function stagesScore(s: SleepSession): number | null {
-  const st = s.stages;
-  if (!st || st.deep_minutes == null || st.rem_minutes == null || st.light_minutes == null) return null;
-  const asleep = st.deep_minutes + st.rem_minutes + st.light_minutes;
-  if (asleep <= 0) return null;
-  const deep = (st.deep_minutes / asleep) * 100;
-  const rem = (st.rem_minutes / asleep) * 100;
-  const off = (v: number, lo: number, hi: number) => (v < lo ? lo - v : v > hi ? v - hi : 0);
-  return clamp(100 - off(deep, 13, 23) * 4 - off(rem, 18, 25) * 4);
-}
-
 /** Minutes after 18:00 local time, so 23:30 and 00:30 are comparable. */
 export function bedtimeMinutes(iso: string): number {
   const d = new Date(iso);
@@ -56,11 +51,32 @@ function median(xs: number[]): number {
   return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
 }
 
-function consistencyScore(s: SleepSession, previous: SleepSession[]): number | null {
+/** Minutes after midnight local time. */
+export function wakeMinutes(iso: string): number {
+  const d = new Date(iso);
+  return d.getHours() * 60 + d.getMinutes();
+}
+
+/** Distance between two clock times in minutes, across midnight. */
+export function clockDiff(a: number, b: number): number {
+  const d = Math.abs(a - b) % 1440;
+  return Math.min(d, 1440 - d);
+}
+
+/** Full marks within 15 minutes of the usual time, zero at 90 minutes off. */
+function regularity(value: number, usual: number[]): number {
+  const diff = clockDiff(value, median(usual));
+  return clamp(100 - (Math.max(0, diff - 15) / 75) * 100);
+}
+
+function bedtimeScore(s: SleepSession, previous: SleepSession[]): number | null {
   if (previous.length < 3) return null;
-  const base = median(previous.map((p) => bedtimeMinutes(p.start_time)));
-  const diff = Math.abs(bedtimeMinutes(s.start_time) - base);
-  return clamp(100 - (diff / 90) * 100);
+  return regularity(bedtimeMinutes(s.start_time), previous.map((p) => bedtimeMinutes(p.start_time)));
+}
+
+function wakeScore(s: SleepSession, previous: SleepSession[]): number | null {
+  if (previous.length < 3) return null;
+  return regularity(wakeMinutes(s.end_time), previous.map((p) => wakeMinutes(p.end_time)));
 }
 
 function interruptionsScore(s: SleepSession): number {
@@ -72,8 +88,8 @@ function interruptionsScore(s: SleepSession): number {
 export function scoreSession(s: SleepSession, previous: SleepSession[]): ScoreBreakdown {
   const parts = {
     duration: durationScore(asleepMinutes(s)),
-    stages: stagesScore(s),
-    consistency: consistencyScore(s, previous),
+    bedtime: bedtimeScore(s, previous),
+    wake: wakeScore(s, previous),
     interruptions: interruptionsScore(s),
   };
   let sum = 0;
@@ -85,12 +101,12 @@ export function scoreSession(s: SleepSession, previous: SleepSession[]): ScoreBr
       weight += WEIGHTS[k];
     }
   });
-  return { ...parts, total: Math.round(sum / weight) };
+  return { v: SCORE_VERSION, ...parts, total: Math.round(sum / weight) };
 }
 
 /** Score a night against the same sleeper's 14 main sleeps before it. */
 export function scoreNight(night: Night, all: Night[]): ScoreBreakdown {
-  if (night.score) return night.score;
+  if (night.score?.v === SCORE_VERSION) return night.score;
   const prev = all
     .filter(
       (n) =>

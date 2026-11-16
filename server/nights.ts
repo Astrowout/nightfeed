@@ -1,5 +1,5 @@
-import { and, desc, eq, lt } from 'drizzle-orm';
-import { scoreSession } from '../src/data/score.js';
+import { and, desc, eq, lt, sql } from 'drizzle-orm';
+import { SCORE_VERSION, scoreSession } from '../src/data/score.js';
 import type { SleepSession, Visibility } from '../src/data/types.js';
 import type { DB } from './db.js';
 import { nights } from './schema.js';
@@ -47,6 +47,32 @@ export async function insertNight(db: DB, n: NewNight) {
     .onConflictDoNothing()
     .returning();
   return row;
+}
+
+/** Recomputes nights stored with an older score formula. Returns how many it updated. */
+export async function rescoreStale(db: DB) {
+  const stale = await db
+    .selectDistinct({ userId: nights.userId })
+    .from(nights)
+    .where(sql`coalesce((${nights.scoreBreakdown}->>'v')::int, 0) <> ${SCORE_VERSION}`);
+  let updated = 0;
+  for (const { userId } of stale) {
+    const rows = await db
+      .select({ id: nights.id, session: nights.session, isNap: nights.isNap, breakdown: nights.scoreBreakdown })
+      .from(nights)
+      .where(eq(nights.userId, userId))
+      .orderBy(nights.startTime);
+    const mains: SleepSession[] = [];
+    for (const r of rows) {
+      if (r.breakdown?.v !== SCORE_VERSION) {
+        const breakdown = scoreSession(r.session, mains.slice(-14));
+        await db.update(nights).set({ score: breakdown.total, scoreBreakdown: breakdown }).where(eq(nights.id, r.id));
+        updated++;
+      }
+      if (!r.isNap) mains.push(r.session);
+    }
+  }
+  return updated;
 }
 
 /** Basic shape check for a session posted by the app. */

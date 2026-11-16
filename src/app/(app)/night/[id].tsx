@@ -58,8 +58,8 @@ export default function NightScreen() {
 
   const pillars: [string, number | null, number, string][] = [
     ['Duration', score.duration, WEIGHTS.duration, '7 to 9 hours asleep scores full marks.'],
-    ['Stages', score.stages, WEIGHTS.stages, 'Deep 13–23% and REM 18–25% of your sleep.'],
-    ['Consistency', score.consistency, WEIGHTS.consistency, 'Lights out close to your usual time.'],
+    ['Lights out', score.bedtime, WEIGHTS.bedtime, 'Within 15 minutes of your usual bedtime.'],
+    ['Wake-up', score.wake, WEIGHTS.wake, 'Within 15 minutes of your usual wake time, weekends too.'],
     ['Interruptions', score.interruptions, WEIGHTS.interruptions, 'Fewer and shorter wake-ups.'],
   ];
 

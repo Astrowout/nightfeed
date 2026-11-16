@@ -4,6 +4,7 @@ import { drizzle } from 'drizzle-orm/neon-http';
 import { migrate } from 'drizzle-orm/neon-http/migrator';
 import type { DB } from '../server/db.js';
 import { ensureChallenges, seedDemo } from '../server/demo.js';
+import { rescoreStale } from '../server/nights.js';
 import { schema } from '../server/schema.js';
 
 const url = process.env.DATABASE_URL ?? process.env.POSTGRES_URL;
@@ -21,4 +22,6 @@ if (!process.env.OW_BASE_URL) {
   const res = await seedDemo(db as unknown as DB);
   console.log(res.seeded ? '[migrate] demo data seeded' : '[migrate] demo data already present');
 }
+const rescored = await rescoreStale(db as unknown as DB);
+if (rescored) console.log(`[migrate] rescored ${rescored} nights with score v2`);
 await ensureChallenges(db as unknown as DB);

@@ -94,11 +94,11 @@ export async function ensureChallenges(db: DB) {
   const sevenStart = new Date(fortnight * 14 * DAY);
   const defs = [
     {
-      id: `c-7h-${iso(sevenStart)}`,
-      name: 'The 7-Hour Club',
-      blurb: 'Sleep 7 hours or more on 12 nights within 21 days.',
+      id: `c-bed8-${iso(sevenStart)}`,
+      name: 'Eight Hours in Bed',
+      blurb: 'Give yourself 8 hours from lights out to wake-up on 12 nights within 21 days.',
       emoji: '🌙',
-      kind: { type: 'min_duration' as const, minutes: 420, nights: 12 },
+      kind: { type: 'in_bed' as const, minutes: 480, nights: 12 },
       startDate: iso(sevenStart),
       endDate: iso(new Date(sevenStart.getTime() + 20 * DAY)),
     },
@@ -112,11 +112,11 @@ export async function ensureChallenges(db: DB) {
       endDate: iso(monthEnd),
     },
     {
-      id: `c-streak-${iso(monthStart)}`,
-      name: 'Five Solid Nights',
-      blurb: 'Score 75 or higher on 5 nights in a row.',
-      emoji: '🔥',
-      kind: { type: 'streak' as const, minScore: 75, nights: 5 },
+      id: `c-wake-${iso(monthStart)}`,
+      name: 'Same Wake-Up, Weekends Too',
+      blurb: 'Wake within 30 minutes of your usual time on 15 days this month, Saturdays and Sundays included.',
+      emoji: '☀️',
+      kind: { type: 'steady_wake' as const, window: 30, nights: 15 },
       startDate: iso(monthStart),
       endDate: iso(monthEnd),
     },

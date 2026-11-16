@@ -1,5 +1,5 @@
 import { and, desc, eq, gte, inArray, lte, ne, notInArray, or } from 'drizzle-orm';
-import { asleepMinutes, bedtimeMinutes } from '../src/data/score.js';
+import { challengeNights, isKnownKind } from '../src/data/challenges.js';
 import type { Challenge, ChallengeKind, Night, Sleeper } from '../src/data/types.js';
 import type { DB } from './db.js';
 import { challengeParticipants, challenges, comments, follows, kudos, nightPhotos, nights, user } from './schema.js';
@@ -63,21 +63,8 @@ export async function attachSocial(db: DB, rows: NightRow[]): Promise<Night[]> {
   }));
 }
 
-export function progressFor(kind: ChallengeKind, list: Pick<NightRow, 'session' | 'score' | 'endTime'>[]): number {
-  const sorted = [...list].sort((a, b) => a.endTime.getTime() - b.endTime.getTime());
-  if (kind.type === 'min_duration') return sorted.filter((n) => asleepMinutes(n.session) >= kind.minutes).length;
-  if (kind.type === 'lights_out') {
-    const [h, m] = kind.before.split(':').map(Number);
-    const limit = (h * 60 + m - 18 * 60 + 1440) % 1440;
-    return sorted.filter((n) => bedtimeMinutes(n.session.start_time) <= limit).length;
-  }
-  let best = 0;
-  let run = 0;
-  for (const n of sorted) {
-    run = n.score >= kind.minScore ? run + 1 : 0;
-    best = Math.max(best, run);
-  }
-  return best;
+export function progressFor(kind: ChallengeKind, list: Pick<NightRow, 'session'>[]): number {
+  return challengeNights(kind, list.map((n) => n.session));
 }
 
 export async function challengesWithBoards(db: DB): Promise<(Challenge & { board: { userId: string; value: number }[] })[]> {
@@ -87,16 +74,17 @@ export async function challengesWithBoards(db: DB): Promise<(Challenge & { board
     .from(challenges)
     .where(gte(challenges.endDate, new Date(today.getTime() - 3 * DAY).toISOString().slice(0, 10)))
     .orderBy(challenges.endDate);
-  if (!recent.length) return [];
-  const parts = await db.select().from(challengeParticipants).where(inArray(challengeParticipants.challengeId, recent.map((c) => c.id)));
+  const live = recent.filter((c) => isKnownKind(c.kind));
+  if (!live.length) return [];
+  const parts = await db.select().from(challengeParticipants).where(inArray(challengeParticipants.challengeId, live.map((c) => c.id)));
   const out = [];
-  for (const c of recent) {
+  for (const c of live) {
     const participants = parts.filter((p) => p.challengeId === c.id).map((p) => p.userId);
     const start = new Date(`${c.startDate}T00:00:00`);
     const end = new Date(new Date(`${c.endDate}T00:00:00`).getTime() + DAY);
     const rows = participants.length
       ? await db
-          .select({ userId: nights.userId, session: nights.session, score: nights.score, endTime: nights.endTime })
+          .select({ userId: nights.userId, session: nights.session })
           .from(nights)
           .where(and(inArray(nights.userId, participants), gte(nights.endTime, start), lte(nights.endTime, end), eq(nights.isNap, false)))
       : [];
